@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AURA-UDP measured results</title>
+<style>
+  body{font:16px system-ui,sans-serif;max-width:1000px;margin:3rem auto;padding:0 1.5rem;color:#172330;background:#f7f9fc}
+  h1{margin-bottom:.2rem}p{line-height:1.5}select{font:inherit;padding:.4rem;border-radius:.4rem}
+  .card{background:white;border:1px solid #dce4ee;border-radius:.8rem;padding:1.4rem;margin-top:1.5rem}
+  table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.65rem;border-bottom:1px solid #e3e8ef}th{background:#edf2f8}
+  .bar{height:1.3rem;background:#dce4ef;position:relative;border-radius:.3rem;overflow:hidden}.fill{height:100%;background:#287f9e}
+  .value{font-variant-numeric:tabular-nums}small{color:#536271}
+</style>
+<h1>AURA-UDP</h1>
+<p>Interactive view of CSV output from executed NS2 simulations.</p>
+<label>Scenario <select id="scenario"><option value="sample">Sample: moderate loss</option><option value="stress">Stress: tight deadline</option></select></label>
+<label> Metric <select id="metric"><option value="pdr">Packet delivery ratio</option><option value="ddr">Deadline delivery ratio</option><option value="avg_delay_ms">Average delay (ms)</option><option value="retransmission_overhead">Retransmission overhead</option><option value="goodput_bps_logical_64B">Logical goodput (bps)</option></select></label>
+<section class="card" id="chart" aria-live="polite"></section>
+<section class="card"><h2>All measured metrics</h2><div id="table"></div></section>
+<p><small>DDR counts timely critical deliveries over all generated critical messages. Each message ID is counted once. One run per scenario; no statistical significance is implied.</small></p>
+<script>
+function parseCSV(text){let lines=text.trim().split(/\r?\n/);let keys=lines.shift().split(',');return lines.map(line=>Object.fromEntries(line.split(',').map((v,i)=>[keys[i],v])))}
+async function render(){
+  let scenario=document.querySelector('#scenario').value, metric=document.querySelector('#metric').value;
+  let response=await fetch(`../../experiments/results/${scenario}/summary.csv`);
+  if(!response.ok){document.querySelector('#chart').textContent='Could not load measured CSV.';return}
+  let rows=parseCSV(await response.text()),max=Math.max(1,...rows.map(r=>+r[metric]));
+  document.querySelector('#chart').innerHTML=`<h2>${document.querySelector('#metric').selectedOptions[0].textContent}</h2>`+
+    rows.map(r=>`<p><strong>${r.mode}</strong> <span class="value">${Number(r[metric]).toFixed(3)}</span></p><div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,100*Number(r[metric])/max))}%"></div></div>`).join('');
+  let cols=['mode','pdr','ddr','avg_delay_ms','retransmission_overhead','goodput_bps_logical_64B'];
+  document.querySelector('#table').innerHTML='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+cols.map(c=>`<td>${c==='mode'?r[c]:Number(r[c]).toFixed(3)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+}
+document.querySelectorAll('select').forEach(s=>s.addEventListener('change',render));render();
+</script>
+</html>

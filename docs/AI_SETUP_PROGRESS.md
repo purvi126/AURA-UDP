@@ -7,7 +7,7 @@ Updated 2026-10-12.
 - Initialized a new local Git repository on `main` at `D:\projects\AURA-UDP`.
 - Implemented live NS2 2.35 datagram simulations for baseline UDP-like one-shot delivery, fixed Selective Repeat, and AURA.
 - Added independently lossy data/ACK paths, background CBR load, variable delay, deadline, loss probability, message interval and documented seed.
-- Added CSV event metrics, measured sample and stress scenarios, and an SVG comparison chart.
+- Added CSV event metrics, measured sample and stress scenarios, SVG comparison charts, and a local CSV-backed interactive dashboard.
 - Added Packet Tracer 9.0 device, cabling, address, route and verification guide, including supported Home Gateway, Temperature Meter and Smoke Detector. Editable `.pkt` topology is not yet complete; UI placement began but full configuration and connectivity could not be verified.
 - Added protocol, academic review, README, license, and Python CI workflow.
 
