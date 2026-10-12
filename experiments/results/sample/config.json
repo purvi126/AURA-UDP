@@ -1,0 +1,9 @@
+{
+  "output": "experiments/results/sample",
+  "loss": 0.15,
+  "delay_ms": 40,
+  "background_kbps": 80,
+  "deadline_ms": 300,
+  "seed": 7,
+  "interval_ms": 120
+}

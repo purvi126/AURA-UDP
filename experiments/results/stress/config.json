@@ -1,0 +1,9 @@
+{
+  "output": "experiments/results/stress",
+  "loss": 0.3,
+  "delay_ms": 80,
+  "background_kbps": 180,
+  "deadline_ms": 120,
+  "seed": 11,
+  "interval_ms": 120
+}
