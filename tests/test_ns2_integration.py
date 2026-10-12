@@ -38,6 +38,21 @@ class NS2IntegrationTest(unittest.TestCase):
     def test_ack_loss(self):
         rows = self.run_mode("sr", .7, 20, 0, 500)
         self.assertTrue(any(r["event"] == "timeout" for r in rows))
+        self.assertTrue(any(r["event"] == "duplicate" for r in rows))
+
+    def test_out_of_order_is_delivered_once(self):
+        rows = self.run_mode("sr", .3, 80, 180, 120)
+        order = [int(r["id"]) for r in rows if r["event"] == "deliver"]
+        self.assertNotEqual(order, sorted(order))
+        self.assertEqual(len(order), len(set(order)))
+
+    def test_aura_timeout_adapts(self):
+        rows = self.run_mode("aura", .3, 40, 80, 300)
+        sends = {int(r["id"]): float(r["time"]) for r in rows if r["event"] == "send" and r["attempt"] == "1"}
+        intervals = [float(r["time"]) - sends[int(r["id"])] for r in rows
+                     if r["event"] == "timeout" and r["attempt"] == "1" and int(r["id"]) in sends]
+        self.assertTrue(intervals)
+        self.assertTrue(any(abs(value - .3) > .02 for value in intervals))
 
 
 if __name__ == "__main__":
