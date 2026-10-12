@@ -21,7 +21,8 @@ Updated 2026-10-12.
 ## Git and publication
 
 - Commits: `cc746c0` repository and CI; `02bb2d8` NS2 transports; `f37b704` analytics, runs, tests; `0be014d` documentation; `6772261` expanded protocol tests and Packet Tracer guide.
-- GitHub CLI 2.102.0 was installed through winget. Official GitHub device authentication was started, and the user was given the one-time login code. Remote publication remains pending authentication.
+- GitHub CLI 2.102.0 was installed through winget and authenticated as `purvi126`. Created and pushed the public repository at <https://github.com/purvi126/AURA-UDP>; `main` tracks `origin/main`. GitHub Actions Python checks passed on the initial push.
+- `7825c72` added the CSV-backed dashboard and stress plot before the initial push.
 
 ## Next actions
 
