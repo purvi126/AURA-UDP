@@ -1,18 +1,18 @@
 # Cisco Packet Tracer smart-campus demonstration
 
-This is a reproducible network build guide. No `.pkt` file has been created or verified. Packet Tracer demonstrates connectivity and the campus scenario; it does not execute AURA-UDP.
+The editable [campus topology](../topology/AURA-UDP-campus.pkt) contains the routed network and traffic-generator PCs. A PC0-to-Server0 simple ICMP PDU succeeded after ARP learning in Packet Tracer 9.0. Native IoT gateway and sensor registration and HTTP have not yet been completed. Packet Tracer demonstrates connectivity and the campus scenario; it does not execute AURA-UDP.
 
 ## Devices and cabling
 
-Use two 2911 routers (R1 and R2), two 2960 switches (SW-SENSOR and SW-SERVER), one Server-PT (MONITOR), three PC-PT devices representing telemetry and safety-alert *traffic generators*, one PC-PT (OPS), one Home Gateway (IOT-GW), one Temperature Meter and one Smoke Detector. Connect the PCs and server to their switches with copper straight-through cables. Connect SW-SENSOR Fa0/24 to R1 Gi0/0, R1 Gi0/1 to R2 Gi0/1, and R2 Gi0/0 to SW-SERVER Fa0/24. Connect the Home Gateway Internet port to SW-SENSOR with copper straight-through. Place the Temperature Meter and Smoke Detector on its IoT wireless network. Cisco's [Packet Tracer IoT activity](https://contenthub.netacad.com/legacy/I2IoT/2.0/en/course/files/1.2.2.1%20Packet%20Tracer%20-%20Adding%20IoT%20Devices%20to%20a%20Smart%20Home.pdf) documents those supported device types and registration workflow.
+The saved topology uses two 2911 routers (Router0 and Router1), two 2960 switches (Switch0 and Switch1), one Server-PT (Server0), three PC-PT devices (PC0/1/2, representing temperature, smoke and alert *traffic generators*), and one operations PC (PC3). The PCs and server connect to switches with copper straight-through cables. Switch0 connects to Router0 Gi0/0, Router0 Gi0/1 connects to Router1 Gi0/0, and Router1 Gi0/1 connects to Switch1. To extend the file with native IoT devices, add a Home Gateway, Temperature Meter and Smoke Detector. Connect the gateway Internet port to Switch0 and join the sensors to its IoT wireless network. Cisco's [Packet Tracer IoT activity](https://contenthub.netacad.com/legacy/I2IoT/2.0/en/course/files/1.2.2.1%20Packet%20Tracer%20-%20Adding%20IoT%20Devices%20to%20a%20Smart%20Home.pdf) documents those supported device types and registration workflow.
 
 ## Address plan
 
 | Segment | Network | Router | Hosts |
 |---|---|---|---|
 | Sensors and alerts | 10.10.10.0/24 | R1 Gi0/0 10.10.10.1 | TEMP .11, SMOKE .12, ALERT .13, IOT-GW Internet .2 |
-| Transit | 10.10.20.0/30 | R1 Gi0/1 .1, R2 Gi0/1 .2 | — |
-| Server and operations | 10.10.30.0/24 | R2 Gi0/0 10.10.30.1 | MONITOR .10, OPS .11 |
+| Transit | 10.10.20.0/30 | Router0 Gi0/1 .1, Router1 Gi0/0 .2 | — |
+| Server and operations | 10.10.30.0/24 | Router1 Gi0/1 10.10.30.1 | MONITOR .10, OPS .11 |
 
 Set each host's mask to 255.255.255.0 and default gateway to its local router address.
 
@@ -38,7 +38,7 @@ end
 write memory
 ```
 
-On R2 use Gi0/0 `10.10.30.1 255.255.255.0`, Gi0/1 `10.10.20.2 255.255.255.252`, and `ip route 10.10.10.0 255.255.255.0 10.10.20.1`.
+On Router1 use Gi0/1 `10.10.30.1 255.255.255.0`, Gi0/0 `10.10.20.2 255.255.255.252`, and `ip route 10.10.10.0 255.255.255.0 10.10.20.1`.
 
 ## Verification and scenario
 

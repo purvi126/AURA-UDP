@@ -49,10 +49,10 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 1. Run the tests and experiments above. Compare PDR, DDR, delay, retransmission overhead and goodput in the CSV and SVG.
 2. Inspect `events.csv` for `generate`, `send`, `timeout`, `receive`, `duplicate`, `deliver`, `late`, `ack`, and `expire` transitions.
 3. Optionally open `ns2.nam` with NAM if installed; no result calculation depends on NAM.
-4. Build the [Packet Tracer campus](packet_tracer/documentation/BUILD_GUIDE.md), verify pings and HTTP, then observe routine and alert PDUs in Simulation mode.
+4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). The routed path is configured; use the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) for addresses and additional IoT registration steps.
 
 ## Limits and next steps
 
-Packet Tracer topology has a reproducible guide but no verified `.pkt` file yet. No multi-seed confidence intervals, adaptive window sizing, router queue priority or custom C++ UDP header are implemented. The logical 64-byte goodput assumption is documented. A future evaluation should use more seeds and message rates and compare confidence intervals. See [progress](docs/AI_SETUP_PROGRESS.md).
+The Packet Tracer `.pkt` contains two routers, two switches, three sensor/alert traffic-generator PCs, an operations PC, and a monitoring server. A simple ICMP PDU from PC0 to Server0 succeeded after ARP learning. Native Temperature Meter, Smoke Detector and Home Gateway registration, plus HTTP verification, remain to be added. No multi-seed confidence intervals, adaptive window sizing, router queue priority or custom C++ UDP header are implemented. The logical 64-byte goodput assumption is documented. A future evaluation should use more seeds and message rates and compare confidence intervals. See [progress](docs/AI_SETUP_PROGRESS.md).
 
 MIT licensed; see [LICENSE](LICENSE).

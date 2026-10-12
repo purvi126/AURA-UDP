@@ -8,7 +8,7 @@ Updated 2026-10-12.
 - Implemented live NS2 2.35 datagram simulations for baseline UDP-like one-shot delivery, fixed Selective Repeat, and AURA.
 - Added independently lossy data/ACK paths, background CBR load, variable delay, deadline, loss probability, message interval and documented seed.
 - Added CSV event metrics, measured sample and stress scenarios, SVG comparison charts, and a local CSV-backed interactive dashboard.
-- Added Packet Tracer 9.0 device, cabling, address, route and verification guide, including supported Home Gateway, Temperature Meter and Smoke Detector. Editable `.pkt` topology is not yet complete; UI placement began but full configuration and connectivity could not be verified.
+- Created editable Packet Tracer 9.0 `.pkt` topology with two routers, two switches, four PCs and a monitoring server. Configured router interfaces, static routes and all host addresses. A PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. The guide covers adding a Home Gateway, Temperature Meter and Smoke Detector; these native IoT devices and registration are not yet in the `.pkt` file.
 - Added protocol, academic review, README, license, and Python CI workflow.
 
 ## Validation
@@ -17,6 +17,7 @@ Updated 2026-10-12.
 - `python3 scripts/experiments.py --output experiments/results/sample`: passed with seed 7.
 - Stress run: loss .3, delay 80 ms, background 180 Kb/s, deadline 120 ms, seed 11: passed. DDR was .125 for all three modes; no AURA improvement is claimed.
 - NAM visualization has not been opened or validated; trace output is produced.
+- Packet Tracer ICMP check: first two PC0-to-Server0 simple PDUs failed during address resolution; a subsequent PDU succeeded. HTTP and native IoT registration have not been verified.
 
 ## Git and publication
 
@@ -26,7 +27,7 @@ Updated 2026-10-12.
 
 ## Next actions
 
-1. Verify local commits and GitHub authentication. Create or reuse public remote and push when available.
-2. Build and verify an editable Packet Tracer topology if UI automation permits; otherwise retain the complete guide.
+1. Add Home Gateway, Temperature Meter and Smoke Detector to the editable Packet Tracer topology and verify registration.
+2. Verify HTTP service and all endpoint paths in Packet Tracer.
 3. Run broader multi-seed and traffic-intensity sweeps before drawing performance conclusions.
-4. Prepare a release only after Packet Tracer and remote publication criteria are satisfied.
+4. Prepare a release only after the remaining Packet Tracer criteria are satisfied.
