@@ -8,20 +8,20 @@ Updated 2026-10-12.
 - Implemented live NS2 2.35 datagram simulations for baseline UDP-like one-shot delivery, fixed Selective Repeat, and AURA.
 - Added independently lossy data/ACK paths, background CBR load, variable delay, deadline, loss probability, message interval and documented seed.
 - Added CSV event metrics, measured sample and stress scenarios, and an SVG comparison chart.
-- Added Packet Tracer 9.0 device, cabling, address, route and verification guide. Editable `.pkt` topology is not yet complete.
+- Added Packet Tracer 9.0 device, cabling, address, route and verification guide, including supported Home Gateway, Temperature Meter and Smoke Detector. Editable `.pkt` topology is not yet complete; UI placement began but full configuration and connectivity could not be verified.
 - Added protocol, academic review, README, license, and Python CI workflow.
 
 ## Validation
 
-- `python3 -m unittest discover -s tests -v`: 5 tests passed in WSL with NS2 2.35.
+- `python3 -m unittest discover -s tests -v`: 7 tests passed in WSL with NS2 2.35.
 - `python3 scripts/experiments.py --output experiments/results/sample`: passed with seed 7.
 - Stress run: loss .3, delay 80 ms, background 180 Kb/s, deadline 120 ms, seed 11: passed. DDR was .125 for all three modes; no AURA improvement is claimed.
 - NAM visualization has not been opened or validated; trace output is produced.
 
 ## Git and publication
 
-- Local Git initialized; commit history and GitHub push status to be updated after commit.
-- `gh` was initially absent. GitHub CLI installation was attempted via winget; authentication and remote publication are pending verification.
+- Commits: `cc746c0` repository and CI; `02bb2d8` NS2 transports; `f37b704` analytics, runs, tests; `0be014d` documentation; `6772261` expanded protocol tests and Packet Tracer guide.
+- GitHub CLI 2.102.0 was installed through winget. Official GitHub device authentication was started, and the user was given the one-time login code. Remote publication remains pending authentication.
 
 ## Next actions
 
