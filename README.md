@@ -6,19 +6,44 @@
 
 **Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer**
 
-This Computer Networks Lab project studies whether application-layer reliability and deadline awareness help safety alerts in a smart-campus network. It compares one-shot datagrams, fixed Selective Repeat, and an adaptive deadline-aware variant in **NS2 2.35**. A separate [Packet Tracer build guide](packet_tracer/documentation/BUILD_GUIDE.md) explains a campus connectivity demonstration. Packet Tracer does not implement AURA.
+This Computer Networks Lab project studies whether application-layer reliability and deadline awareness help safety alerts in a smart-campus network. **NS2 2.35 runs the transport experiment**: it compares one-shot datagrams, fixed Selective Repeat, and AURA. **Cisco Packet Tracer models the campus**: its editable topology shows routers, a server, an IoT gateway, and registered temperature and smoke devices. These are two complementary demonstrations, not one connected runtime. Start with the [plain-language project guide](docs/PROJECT_EXPLAINED.md) if the terms are new.
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  S[Sensor and alert source] --> R[NS2 router<br/>128 Kb/s bottleneck] --> D[Monitoring receiver]
-  B[Background CBR source] --> R
-  D -- ACKs, SR and AURA --> S
-  D --> E[Application event CSV] --> M[Python metrics and SVG plot]
+flowchart TB
+  Q["Question: can urgent alerts reach a monitor on time?"]
+  subgraph SIM["1. NS2 — runs and measures the transport protocols"]
+    direction LR
+    N1["Source: 30 messages<br/>baseline · SR · AURA"] --> N2["Lossy link<br/>128 Kb/s bottleneck"] --> N3["Monitor: delivery<br/>and late-alert checks"] --> N4["Event logs → metrics<br/>charts and dashboard"]
+    N5["Competing traffic"] --> N2
+    N3 -. "ACKs for SR and AURA" .-> N1
+  end
+  subgraph CAMPUS["2. Cisco Packet Tracer — shows the campus devices and routes"]
+    direction LR
+    C1["Temperature + smoke sensors"] --> C2["Home Gateway"] --> C3["Tablet device view"]
+    C4["Sensor-side PC0"] --> C5["Router0 → Router1"] --> C6["Server0 HTTP page"]
+  end
+  Q --> N1
+  Q --> C1
+  Q --> C4
+  classDef ns fill:#e7f4f0,stroke:#087b78,color:#163b43
+  classDef cisco fill:#f1ecf8,stroke:#68549b,color:#20343a
+  class N1,N2,N3,N4,N5 ns
+  class C1,C2,C3,C4,C5,C6 cisco
 ```
 
-Numbered datagrams and ACKs are carried by real NS2 `Agent/Message` instances. The sender controls a four-message window, retries individually and suppresses duplicate delivery. AURA adds critical-first admission, absolute deadlines, RTT-based RTO, Karn's rule and timeout backoff. See [protocol details](docs/PROTOCOL.md). The novelty here is the *combination and evaluation* of established mechanisms in this lab scenario; no claim of a new transport standard is made.
+**The two lanes are separate.** No Packet Tracer sensor sends packets into NS2, and the Packet Tracer HTTP page does not execute AURA. NS2 provides measured delivery and retry results; Packet Tracer provides inspectable campus connectivity and IoT registration.
+
+| Where to look | What is implemented there |
+|---|---|
+| [ns2/run.tcl](ns2/run.tcl) | NS2 nodes, links, loss, traffic, baseline/SR/AURA sender behavior, ACKs, deadlines, and event logs. |
+| [scripts/multiseed.py](scripts/multiseed.py) and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs and turn their logs into measured results. |
+| [python/dashboard/index.html](python/dashboard/index.html) | Explore the saved NS2 results and message events; it does not run a simulation. |
+| [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt) | Editable Cisco Packet Tracer campus with routed PCs, Server0, Home Gateway, Temperature Monitor, and Smoke Detector. |
+| [server-index.html](packet_tracer/documentation/server-index.html) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md) | Source of Server0's HTTP page, address plan, and steps to inspect the Packet Tracer paths. |
+
+Numbered datagrams and ACKs are carried by NS2 `Agent/Message` instances. The sender controls a four-message window, retries individually, and suppresses duplicate delivery. AURA adds critical-first admission, absolute deadlines, RTT-based retry timing, Karn's rule, and timeout backoff. See [protocol details](docs/PROTOCOL.md). The novelty here is the *combination and evaluation* of established mechanisms in this lab scenario; no claim of a new transport standard is made.
 
 ## Requirements and quick start
 
@@ -67,11 +92,7 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 
 ![Readable diagram of the routed HTTP path and the two registered native IoT sensors](packet_tracer/documentation/media/evidence-overview.svg)
 
-The diagram summarizes two checks in the saved topology. Inspect the [PC0 routed HTTP capture](packet_tracer/documentation/media/routed-http-pc0.jpg) and [Home Gateway device capture](packet_tracer/documentation/media/gateway-devices.jpg) for Packet Tracer UI evidence. An older [PC3 capture](packet_tracer/documentation/media/server-http.jpg) shows HTTP from a client on the **same server LAN**, so it is not evidence of routing. Packet Tracer's UI captures remain small; the diagram makes their paths and device names readable. See the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) for the address plan and steps.
-
-![Packet Tracer PC0 browser displaying the larger-text campus page loaded from Server0 through both routers](packet_tracer/documentation/media/routed-http-pc0.jpg)
-
-The page itself now uses larger type and shorter explanations. The title bar identifies PC0; the address field shows Server0 at `10.10.30.10`.
+This vector diagram is a **readable explanation of observed checks**, not a substitute for a Packet Tracer capture. The original [PC0 routed HTTP screenshot](packet_tracer/documentation/media/routed-http-pc0.jpg) is only 513 pixels wide, so its small text becomes blurry when enlarged in GitHub's README. Open the original at native size if you need to inspect the PC0 title bar and `10.10.30.10` address. The [Home Gateway screenshot](packet_tracer/documentation/media/gateway-devices.jpg) shows the registered sensors. An older [PC3 screenshot](packet_tracer/documentation/media/server-http.jpg) shows HTTP on the **same server LAN**, so it is not routing evidence. Follow the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) to verify either path in the editable topology.
 
 ## Current validation and limits
 

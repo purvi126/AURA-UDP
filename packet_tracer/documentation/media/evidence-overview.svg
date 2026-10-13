@@ -1,35 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="472" viewBox="0 0 1080 472" role="img" aria-labelledby="title desc">
-  <title id="title">Packet Tracer verification overview</title>
-  <desc id="desc">Two verified paths: sensor-side PC0 loaded the HTTP page from Server0 through Router0 and Router1; Tablet PC0 showed registered temperature and smoke sensors on the Home Gateway.</desc>
-  <rect width="1080" height="472" rx="22" fill="#f5f2eb"/>
-  <text x="36" y="57" fill="#163b43" font-family="Arial,sans-serif" font-size="28" font-weight="700">What the Packet Tracer file verifies</text>
-  <text x="36" y="86" fill="#52666b" font-family="Arial,sans-serif" font-size="16">A readable guide to the saved screenshots · connectivity evidence, not NS2 performance</text>
-  <rect x="36" y="111" width="494" height="284" rx="17" fill="#fffefa" stroke="#cad8d3" stroke-width="2"/>
-  <rect x="550" y="111" width="494" height="284" rx="17" fill="#fffefa" stroke="#cad8d3" stroke-width="2"/>
-  <rect x="54" y="129" width="92" height="30" rx="15" fill="#dceee8"/>
-  <text x="70" y="150" fill="#075f5d" font-family="Arial,sans-serif" font-size="13" font-weight="700">CHECK 01</text>
-  <text x="54" y="199" fill="#163b43" font-family="Arial,sans-serif" font-size="24" font-weight="700">Routed HTTP page</text>
-  <text x="54" y="231" fill="#52666b" font-family="Arial,sans-serif" font-size="16">PC0 browser → Router0 → Router1 → Server0</text>
-  <path d="M73 274 H470" stroke="#b8cfc7" stroke-width="4"/>
-  <circle cx="75" cy="274" r="12" fill="#b45a32"/>
-  <circle cx="261" cy="274" r="12" fill="#68549b"/>
-  <circle cx="469" cy="274" r="12" fill="#087b78"/>
-  <text x="55" y="309" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">PC0</text>
-  <text x="225" y="309" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">Two routers</text>
-  <text x="429" y="309" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">Server0</text>
-  <text x="54" y="348" fill="#075f5d" font-family="Arial,sans-serif" font-size="17" font-weight="700">HTTP page loaded at 10.10.30.10</text>
-  <rect x="568" y="129" width="92" height="30" rx="15" fill="#e9e3f3"/>
-  <text x="584" y="150" fill="#68549b" font-family="Arial,sans-serif" font-size="13" font-weight="700">CHECK 02</text>
-  <text x="568" y="199" fill="#163b43" font-family="Arial,sans-serif" font-size="24" font-weight="700">Native IoT registration</text>
-  <text x="568" y="231" fill="#52666b" font-family="Arial,sans-serif" font-size="16">Tablet PC0 → Home Gateway at 192.168.25.1</text>
-  <rect x="568" y="253" width="458" height="51" rx="9" fill="#e7f3ee"/>
-  <circle cx="589" cy="279" r="7" fill="#087b78"/>
-  <text x="606" y="285" fill="#20343a" font-family="Arial,sans-serif" font-size="17" font-weight="700">TEMP-SENSOR</text>
-  <text x="849" y="284" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Temperature field</text>
-  <rect x="568" y="315" width="458" height="51" rx="9" fill="#f3eae4"/>
-  <circle cx="589" cy="341" r="7" fill="#b45a32"/>
-  <text x="606" y="347" fill="#20343a" font-family="Arial,sans-serif" font-size="17" font-weight="700">SMOKE-SENSOR</text>
-  <text x="850" y="346" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Alarm / level fields</text>
-  <rect x="36" y="414" width="1008" height="37" rx="9" fill="#163b43"/>
-  <text x="54" y="439" fill="#eef8f3" font-family="Arial,sans-serif" font-size="15">AURA transport is evaluated in NS2. Packet Tracer demonstrates the campus network and device registration.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+  <title id="title">Readable Packet Tracer verification guide</title>
+  <desc id="desc">A redrawn explanation of two observed checks. PC0 loaded Server0's HTTP page through Router0 and Router1. The tablet's Home Gateway device list showed registered temperature and smoke sensors. Original Packet Tracer captures are linked in the README.</desc>
+  <rect width="900" height="500" rx="22" fill="#f5f2eb"/>
+  <text x="30" y="47" fill="#163b43" font-family="Arial,sans-serif" font-size="29" font-weight="700">Cisco Packet Tracer: what was checked</text>
+  <text x="30" y="76" fill="#465e62" font-family="Arial,sans-serif" font-size="18">Readable explanation of the small original captures</text>
+
+  <rect x="30" y="101" width="840" height="167" rx="17" fill="#fffefa" stroke="#b8cfc7" stroke-width="2"/>
+  <rect x="48" y="119" width="118" height="32" rx="16" fill="#dceee8"/>
+  <text x="63" y="141" fill="#075f5d" font-family="Arial,sans-serif" font-size="17" font-weight="700">CHECK 01</text>
+  <text x="184" y="143" fill="#163b43" font-family="Arial,sans-serif" font-size="24" font-weight="700">Routed HTTP works</text>
+  <text x="50" y="187" fill="#20343a" font-family="Arial,sans-serif" font-size="22" font-weight="700">PC0  →  Router0  →  Router1  →  Server0</text>
+  <text x="50" y="218" fill="#465e62" font-family="Arial,sans-serif" font-size="18">Sensor LAN: 10.10.10.11</text>
+  <text x="466" y="218" fill="#465e62" font-family="Arial,sans-serif" font-size="18">HTTP page: 10.10.30.10</text>
+  <text x="50" y="248" fill="#075f5d" font-family="Arial,sans-serif" font-size="19" font-weight="700">Observed: the custom page loaded in PC0's browser.</text>
+
+  <rect x="30" y="283" width="840" height="168" rx="17" fill="#fffefa" stroke="#d0c4e0" stroke-width="2"/>
+  <rect x="48" y="301" width="118" height="32" rx="16" fill="#e9e3f3"/>
+  <text x="63" y="323" fill="#604688" font-family="Arial,sans-serif" font-size="17" font-weight="700">CHECK 02</text>
+  <text x="184" y="325" fill="#163b43" font-family="Arial,sans-serif" font-size="24" font-weight="700">Native IoT devices registered</text>
+  <text x="50" y="367" fill="#20343a" font-family="Arial,sans-serif" font-size="21" font-weight="700">Temperature Monitor + Smoke Detector</text>
+  <text x="50" y="398" fill="#465e62" font-family="Arial,sans-serif" font-size="18">Home Gateway (192.168.25.1)  →  Tablet PC0 device view</text>
+  <text x="50" y="430" fill="#604688" font-family="Arial,sans-serif" font-size="19" font-weight="700">Observed: both devices and their fields appeared.</text>
+
+  <text x="30" y="480" fill="#465e62" font-family="Arial,sans-serif" font-size="17">NS2 runs the AURA transport experiment separately; this image shows Packet Tracer checks.</text>
 </svg>

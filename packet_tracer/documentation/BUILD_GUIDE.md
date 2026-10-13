@@ -20,7 +20,7 @@ HomeGateway0 has Internet address `10.10.10.2/24` and gateway `10.10.10.1`. Its 
 
 ## Router configuration
 
-On R1:
+On Router0:
 
 ```text
 enable
