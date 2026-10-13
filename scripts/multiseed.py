@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import shutil
 import statistics
 import subprocess
 import sys
@@ -23,7 +24,7 @@ METRICS = ("pdr", "ddr", "avg_delay_ms", "retransmission_overhead")
 
 def write_csv(path, rows):
     with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys(), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -36,6 +37,10 @@ def main():
     args = parser.parse_args()
     if args.seeds < 2:
         parser.error("--seeds must be at least 2")
+    if args.first_seed < 0:
+        parser.error("--first-seed must be non-negative")
+    if shutil.which("ns") is None:
+        parser.error("NS2 executable 'ns' was not found on PATH")
     args.output.mkdir(parents=True, exist_ok=True)
     runs = []
     for scenario, config in SCENARIOS.items():

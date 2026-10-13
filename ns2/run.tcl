@@ -4,6 +4,13 @@ if {$argc != 7 && $argc != 8} { puts stderr "usage: ns run.tcl baseline|sr|aura 
 lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms
 if {$interval_ms eq ""} { set interval_ms 120 }
 if {$mode ni {baseline sr aura}} { error "invalid mode $mode" }
+foreach {name value} [list loss $loss delay_ms $delay_ms background_kbps $bg_kbps deadline_ms $deadline_ms interval_ms $interval_ms] {
+    if {![regexp {^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$} $value]} { error "$name must be a non-negative finite number" }
+}
+if {$loss > 1} { error "loss must be between 0 and 1" }
+if {$delay_ms <= 0 || $deadline_ms <= 0 || $interval_ms <= 0} { error "delay, deadline, and interval must be positive" }
+if {![string is integer -strict $seed] || $seed < 0} { error "seed must be a non-negative integer" }
+if {$outdir eq ""} { error "output directory must not be empty" }
 file mkdir $outdir
 ns-random $seed
 set ns [new Simulator]
@@ -84,15 +91,23 @@ proc log_event {ev id} {
 }
 proc transmit {id} {
     global ns sender mode class deadline attempts senttime state rto
-    if {$state($id) ne "pending"} { return }
+    if {$state($id) ne "pending"} { return 0 }
     if {$mode eq "aura" && $class($id) eq "critical" && [$ns now] >= $deadline($id)} {
-        set state($id) expired; log_event expire $id; pump; return
+        set state($id) expired; log_event expire $id; return 0
     }
     incr attempts($id)
     set senttime($id) [$ns now]
     log_event send $id
     $sender send "DATA:$id:$class($id):$attempts($id):$deadline($id)"
     if {$mode ne "baseline"} { $ns at [expr {[$ns now] + $rto}] "timeout $id $attempts($id)" }
+    return 1
+}
+proc expire_alert {id} {
+    global state
+    if {$state($id) ni {queued pending}} { return }
+    set state($id) expired
+    log_event expire $id
+    pump
 }
 proc timeout {id attempt} {
     global state attempts mode deadline ns rto
@@ -103,7 +118,7 @@ proc timeout {id attempt} {
     if {$attempts($id) >= 5} { set state($id) failed; log_event fail $id; pump; return }
     log_event timeout $id
     if {$mode eq "aura"} { set rto [expr {min(1.0, $rto * 1.5)}] }
-    transmit $id
+    if {![transmit $id]} { pump }
 }
 proc on_ack {id} {
     global ns state mode attempts senttime srtt rttvar rto
@@ -129,9 +144,9 @@ proc pump {} {
     while {$active < $window && [llength $pending] > 0} {
         set id [lindex $pending 0]
         set pending [lrange $pending 1 end]
+        if {$state($id) ne "queued"} { continue }
         set state($id) pending
-        transmit $id
-        incr active
+        if {[transmit $id]} { incr active }
     }
 }
 proc generate {cls} {
@@ -142,12 +157,14 @@ proc generate {cls} {
     if {$cls eq "critical"} { set deadline($id) [expr {[$ns now]+$deadline_ms/1000.0}] } else { set deadline($id) 10000.0 }
     set state($id) queued
     log_event generate $id
+    if {$mode eq "aura" && $cls eq "critical"} { $ns at $deadline($id) "expire_alert $id" }
     if {$mode eq "baseline"} { set state($id) pending; transmit $id; return }
     if {$mode eq "aura" && $cls eq "critical"} { set pending [linsert $pending 0 $id] } else { lappend pending $id }
     pump
 }
 proc finish {} {
-    global trace nam events
+    global ns trace nam events
+    puts $events "[$ns now],finish,0,,0,"
     close $trace; close $nam; close $events
     exit 0
 }

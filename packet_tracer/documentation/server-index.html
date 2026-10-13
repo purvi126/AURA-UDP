@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <title>AURA-UDP | Campus Monitor</title>
   <style>
-    body { margin: 0; background: #eef5f4; color: #142b38; font: 14px Arial, sans-serif; }
-    header { background: #12354a; color: white; padding: 18px 20px; border-bottom: 5px solid #e8ad47; }
-    h1 { margin: 0; font-size: 25px; letter-spacing: 2px; }
+    body { margin: 0; background: #eef5f4; color: #142b38; font: 17px Arial, sans-serif; }
+    header { background: #12354a; color: white; padding: 17px 20px; border-bottom: 5px solid #e8ad47; }
+    h1 { margin: 0; font-size: 28px; letter-spacing: 2px; }
     header p { margin: 5px 0 0; color: #c8e8e5; }
     main { padding: 15px 20px; }
-    .card { background: white; border-left: 4px solid #168c87; margin-bottom: 12px; padding: 10px 13px; }
-    h2 { margin: 0 0 7px; font-size: 16px; color: #126a73; }
-    p { margin: 5px 0; line-height: 1.4; }
+    .card { background: white; border-left: 4px solid #168c87; margin-bottom: 12px; padding: 12px 13px; }
+    h2 { margin: 0 0 7px; font-size: 19px; color: #126a73; }
+    p { margin: 5px 0; line-height: 1.5; }
     code { color: #9b5f0b; }
     footer { padding: 0 20px 15px; color: #526774; font-size: 12px; }
   </style>
@@ -19,9 +19,9 @@
 <body>
   <header><h1>AURA-UDP</h1><p>Smart campus network monitor</p></header>
   <main>
-    <div class="card"><h2>HTTP path is live</h2><p>Operations PC &rarr; routed campus network &rarr; MONITOR at <code>10.10.30.10</code>.</p></div>
-    <div class="card"><h2>Two complementary demos</h2><p>Packet Tracer shows routing, HTTP, and native IoT gateway registration. NS2 separately runs the baseline, Selective Repeat, and deadline-aware AURA transport experiments.</p></div>
-    <div class="card"><h2>Watch the experiment</h2><p>Run the NS2 seed sweep, open the local dashboard, then compare deadline delivery and retransmissions. Results come from executed simulations.</p></div>
+    <div class="card"><h2>HTTP path is live</h2><p>PC0 &rarr; Router0 &rarr; Router1 &rarr; MONITOR (<code>10.10.30.10</code>). This page loaded from the sensor LAN.</p></div>
+    <div class="card"><h2>Two connected demonstrations</h2><p>Packet Tracer shows routing, HTTP, and sensor registration. NS2 runs the baseline, Selective Repeat, and AURA experiments.</p></div>
+    <div class="card"><h2>Explore the results</h2><p>Run the 30-seed NS2 sweep. Use the local dashboard to compare on-time alerts and retry cost.</p></div>
   </main>
   <footer>Lab demonstration &bull; This Packet Tracer page does not run AURA transport.</footer>
 </body>

@@ -1,31 +1,76 @@
 """Metrics from NS2 application events; each message ID is counted once."""
+import argparse
 import csv
 import json
-import sys
+import math
 from pathlib import Path
 
 
 def calculate(path):
     with Path(path).open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
-    generated = {int(r["id"]): r for r in rows if r["event"] == "generate"}
+    if not rows:
+        raise ValueError(f"{path}: event log is empty")
+    required = {"time", "event", "id", "class", "attempt", "deadline"}
+    if not required.issubset(rows[0]):
+        raise ValueError(f"{path}: missing event columns: {', '.join(sorted(required - rows[0].keys()))}")
+    generated = {}
     delivered = {}
     sends = 0
     sent_ids = set()
+    finish_time = None
+    times = []
+    allowed = {"generate", "send", "receive", "deliver", "ack", "timeout",
+               "duplicate", "expire", "late", "fail", "finish"}
     for row in rows:
+        event = row["event"]
+        if event not in allowed:
+            raise ValueError(f"{path}: unknown event {event!r}")
+        time = float(row["time"])
+        if not math.isfinite(time) or time < 0:
+            raise ValueError(f"{path}: invalid event time {row['time']!r}")
+        if times and time < times[-1]:
+            raise ValueError(f"{path}: event times are out of order")
+        if finish_time is not None:
+            raise ValueError(f"{path}: events appear after finish")
+        times.append(time)
+        if event == "finish":
+            finish_time = time
+            continue
         mid = int(row["id"])
-        if row["event"] == "send":
+        if mid <= 0:
+            raise ValueError(f"{path}: message IDs must be positive")
+        if event == "generate":
+            if mid in generated:
+                raise ValueError(f"{path}: duplicate generation for message {mid}")
+            if row["class"] not in {"critical", "routine"}:
+                raise ValueError(f"{path}: invalid message class {row['class']!r}")
+            deadline = float(row["deadline"])
+            if not math.isfinite(deadline) or deadline < time:
+                raise ValueError(f"{path}: invalid deadline for message {mid}")
+            generated[mid] = row
+        elif mid not in generated:
+            raise ValueError(f"{path}: {event} for message {mid} before generation")
+        elif row["class"] != generated[mid]["class"]:
+            raise ValueError(f"{path}: class changed for message {mid}")
+        if event == "send":
             sends += 1
             sent_ids.add(mid)
-        elif row["event"] == "deliver" and mid not in delivered:
+        elif event == "deliver" and mid not in delivered:
             delivered[mid] = row
+    if not generated:
+        raise ValueError(f"{path}: no generated messages")
     n = len(generated)
     critical = [mid for mid, row in generated.items() if row["class"] == "critical"]
     timely = sum(mid in delivered and float(delivered[mid]["time"]) <= float(generated[mid]["deadline"]) for mid in critical)
     delays = [float(row["time"]) - float(generated[mid]["time"]) for mid, row in delivered.items()]
-    end = max((float(r["time"]) for r in rows), default=0)
-    start = min((float(r["time"]) for r in rows), default=0)
-    span = max(end - start, 1e-9)
+    if any(delay < 0 for delay in delays):
+        raise ValueError(f"{path}: delivery precedes generation")
+    start = min(float(row["time"]) for row in generated.values())
+    end = finish_time if finish_time is not None else max(times)
+    if end <= start:
+        raise ValueError(f"{path}: observation interval must end after generation")
+    span = end - start
     # Agent/Message payload is small; goodput uses a documented 64-byte logical message.
     return {
         "generated": n,
@@ -43,4 +88,10 @@ def calculate(path):
 
 
 if __name__ == "__main__":
-    print(json.dumps(calculate(sys.argv[1]), indent=2))
+    parser = argparse.ArgumentParser(description="Calculate metrics from an NS2 event log")
+    parser.add_argument("events", type=Path)
+    args = parser.parse_args()
+    try:
+        print(json.dumps(calculate(args.events), indent=2))
+    except (OSError, ValueError, KeyError) as error:
+        parser.error(str(error))

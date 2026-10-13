@@ -2,6 +2,8 @@
 import argparse
 import csv
 import json
+import math
+import shutil
 import subprocess
 from pathlib import Path
 import sys
@@ -21,6 +23,14 @@ def main():
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--interval-ms", type=int, default=120)
     a = p.parse_args()
+    if not math.isfinite(a.loss) or not 0 <= a.loss <= 1:
+        p.error("--loss must be between 0 and 1")
+    if a.delay_ms <= 0 or a.deadline_ms <= 0 or a.interval_ms <= 0:
+        p.error("--delay-ms, --deadline-ms, and --interval-ms must be positive")
+    if a.background_kbps < 0 or a.seed < 0:
+        p.error("--background-kbps and --seed must be non-negative")
+    if shutil.which("ns") is None:
+        p.error("NS2 executable 'ns' was not found on PATH")
     a.output.mkdir(parents=True, exist_ok=True)
     summary = []
     for mode in ("baseline", "sr", "aura"):
@@ -30,7 +40,7 @@ def main():
                         str(a.seed), str(dest), str(a.interval_ms)], check=True)
         summary.append({"mode": mode, **calculate(dest / "events.csv")})
     with (a.output / "summary.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=summary[0].keys())
+        writer = csv.DictWriter(f, fieldnames=summary[0].keys(), lineterminator="\n")
         writer.writeheader()
         writer.writerows(summary)
     (a.output / "config.json").write_text(json.dumps(vars(a), default=str, indent=2), encoding="utf-8")

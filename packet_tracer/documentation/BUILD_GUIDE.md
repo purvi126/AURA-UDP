@@ -1,6 +1,6 @@
 # Cisco Packet Tracer smart-campus demonstration
 
-The editable [campus topology](../topology/AURA-UDP-campus.pkt) contains the routed network, traffic-generator PCs, a DLC100 Home Gateway, a Temperature Monitor, and a Smoke Detector. PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. PC1 and PC2 each pinged Server0 successfully, and PC3 pinged PC2 successfully. PC3 also loaded the custom [AURA landing page](server-index.html) from Server0 over HTTP in Packet Tracer 9.0. The wireless native sensors are registered with the Home Gateway and appear on the tablet's gateway device page. Packet Tracer demonstrates connectivity and the campus scenario; it does not execute AURA-UDP.
+The editable [campus topology](../topology/AURA-UDP-campus.pkt) contains the routed network, traffic-generator PCs, a DLC100 Home Gateway, a Temperature Monitor, and a Smoke Detector. PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. PC1 and PC2 each pinged Server0 successfully, and PC3 pinged PC2 successfully. Sensor-side PC0 loaded the custom [AURA landing page](server-index.html) from Server0 over HTTP through Router0 and Router1 in Packet Tracer 9.0. PC3 also loaded the page, but PC3 and Server0 share the server LAN. The wireless native sensors are registered with the Home Gateway and appear on the tablet's gateway device page. Packet Tracer demonstrates connectivity and the campus scenario; it does not execute AURA-UDP.
 
 ## Devices and cabling
 
@@ -44,7 +44,7 @@ On Router1 use Gi0/1 `10.10.30.1 255.255.255.0`, Gi0/0 `10.10.20.2 255.255.255.2
 
 1. Confirm `show ip interface brief` shows all router links up/up and `show ip route` includes the remote LAN.
 2. From TEMP, SMOKE, and ALERT, ping `10.10.30.10`; from OPS ping `10.10.10.13`.
-3. Server0 HTTP is On. Open `http://10.10.30.10` from PC3 to reproduce the verified AURA landing page. Its source is [server-index.html](server-index.html); edit it in Server0 > Services > HTTP > `index.html` if rebuilding the topology.
+3. Server0 HTTP is On. Open `http://10.10.30.10` from PC0 to reproduce the verified routed HTTP path and AURA landing page. Its source is [server-index.html](server-index.html); edit it in Server0 > Services > HTTP > `index.html` if rebuilding the topology. PC3 can also open the page locally on the server LAN.
 4. In Simulation mode filter ICMP and HTTP. Send periodic simple PDUs from TEMP and SMOKE to MONITOR as routine telemetry; send an immediate PDU from ALERT as the critical-alert scenario. Record packet paths and timestamps as demonstration evidence.
 5. Check the Temperature Monitor value and Smoke Detector alarm and level fields in the Home Gateway IoT device page. The verified saved state exposed the fields; a triggered smoke transition was not part of the connectivity acceptance check.
 

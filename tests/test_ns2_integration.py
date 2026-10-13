@@ -32,7 +32,10 @@ class NS2IntegrationTest(unittest.TestCase):
 
     def test_aura_deadline_expiration(self):
         rows = self.run_mode("aura", .3, 80, 180, 120)
-        self.assertTrue(any(r["event"] == "expire" for r in rows))
+        expired = [r for r in rows if r["event"] == "expire"]
+        self.assertTrue(expired)
+        self.assertTrue(all(abs(float(r["time"]) - float(r["deadline"])) < 1e-8
+                            for r in expired if r["class"] == "critical"))
         self.assertTrue(any(r["event"] == "late" for r in rows))
         self.assertTrue(all(float(r["time"]) < float(r["deadline"])
                             for r in rows if r["event"] == "send" and r["class"] == "critical"))
@@ -62,6 +65,13 @@ class NS2IntegrationTest(unittest.TestCase):
                      if r["event"] == "timeout" and r["attempt"] == "1" and int(r["id"]) in sends]
         self.assertTrue(intervals)
         self.assertTrue(any(abs(value - .3) > .02 for value in intervals))
+
+    def test_common_observation_finish_time(self):
+        baseline = self.run_mode("baseline", .15, 40, 80, 300)
+        aura = self.run_mode("aura", .15, 40, 80, 300)
+        for rows in (baseline, aura):
+            self.assertEqual(rows[-1]["event"], "finish")
+        self.assertEqual(baseline[-1]["time"], aura[-1]["time"])
 
 
 if __name__ == "__main__":

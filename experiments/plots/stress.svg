@@ -1,34 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
-<rect width="900" height="520" fill="white"/>
-<text x="36" y="38" font-family="sans-serif" font-size="24">Measured NS2 comparison</text>
-<text x="40" y="85" font-family="sans-serif" font-size="17">PDR</text>
-<text x="40" y="110" font-family="sans-serif" font-size="14">baseline</text>
-<rect x="40" y="119" width="120.3" height="29" fill="#537cba"/>
-<text x="40" y="168" font-family="sans-serif" font-size="13">0.633</text>
-<text x="40" y="225" font-family="sans-serif" font-size="14">sr</text>
-<rect x="40" y="234" width="190.0" height="29" fill="#41a477"/>
-<text x="40" y="283" font-family="sans-serif" font-size="13">1.000</text>
-<text x="40" y="340" font-family="sans-serif" font-size="14">aura</text>
-<rect x="40" y="349" width="158.3" height="29" fill="#d98d42"/>
-<text x="40" y="398" font-family="sans-serif" font-size="13">0.833</text>
-<text x="325" y="85" font-family="sans-serif" font-size="17">DDR</text>
-<text x="325" y="110" font-family="sans-serif" font-size="14">baseline</text>
-<rect x="325" y="119" width="23.8" height="29" fill="#537cba"/>
-<text x="325" y="168" font-family="sans-serif" font-size="13">0.125</text>
-<text x="325" y="225" font-family="sans-serif" font-size="14">sr</text>
-<rect x="325" y="234" width="23.8" height="29" fill="#41a477"/>
-<text x="325" y="283" font-family="sans-serif" font-size="13">0.125</text>
-<text x="325" y="340" font-family="sans-serif" font-size="14">aura</text>
-<rect x="325" y="349" width="23.8" height="29" fill="#d98d42"/>
-<text x="325" y="398" font-family="sans-serif" font-size="13">0.125</text>
-<text x="610" y="85" font-family="sans-serif" font-size="17">Retransmission overhead</text>
-<text x="610" y="110" font-family="sans-serif" font-size="14">baseline</text>
-<rect x="610" y="119" width="0.0" height="29" fill="#537cba"/>
-<text x="610" y="168" font-family="sans-serif" font-size="13">0.000</text>
-<text x="610" y="225" font-family="sans-serif" font-size="14">sr</text>
-<rect x="610" y="234" width="215.0" height="29" fill="#41a477"/>
-<text x="610" y="283" font-family="sans-serif" font-size="13">2.133</text>
-<text x="610" y="340" font-family="sans-serif" font-size="14">aura</text>
-<rect x="610" y="349" width="95.0" height="29" fill="#d98d42"/>
-<text x="610" y="398" font-family="sans-serif" font-size="13">0.500</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="419" viewBox="0 0 1020 419" role="img" aria-labelledby="title desc">
+<title id="title">Measured NS2 transport comparison</title>
+<desc id="desc">Each scenario compares baseline UDP, Selective Repeat and AURA for delivery ratio, on-time critical delivery and retransmission overhead.</desc>
+<rect width="1020" height="100%" rx="20" fill="#f5f2eb"/>
+<text x="34" y="48" fill="#163b43" font-family="Arial,sans-serif" font-size="28" font-weight="700">Measured NS2 outcomes</text>
+<text x="34" y="77" fill="#52666b" font-family="Arial,sans-serif" font-size="16">One documented sample run · bars use the scales shown below</text>
+<text x="150" y="115" fill="#20343a" font-family="Arial,sans-serif" font-size="16" font-weight="700">PDR</text>
+<text x="150" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–100%</text>
+<text x="450" y="115" fill="#20343a" font-family="Arial,sans-serif" font-size="16" font-weight="700">On-time critical (DDR)</text>
+<text x="450" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–100%</text>
+<text x="750" y="115" fill="#20343a" font-family="Arial,sans-serif" font-size="16" font-weight="700">Extra sends / message</text>
+<text x="750" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–2.5</text>
+<rect x="28" y="147" width="964" height="185" rx="13" fill="#fffefa" stroke="#d7dedb"/>
+<text x="46" y="174" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">Measured Sample</text>
+<circle cx="51" cy="213" r="7" fill="#b45a32"/>
+<text x="66" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Baseline</text>
+<rect x="150" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="150" y="203" width="111.5" height="22" rx="5" fill="#b45a32"/>
+<text x="334" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">63.3%</text>
+<rect x="450" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="450" y="203" width="22.0" height="22" rx="5" fill="#b45a32"/>
+<text x="634" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.5%</text>
+<rect x="750" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="750" y="203" width="0.0" height="22" rx="5" fill="#b45a32"/>
+<text x="934" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.00</text>
+<circle cx="51" cy="255" r="7" fill="#68549b"/>
+<text x="66" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Selective Repeat</text>
+<rect x="150" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="150" y="245" width="176.0" height="22" rx="5" fill="#68549b"/>
+<text x="334" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
+<rect x="450" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="450" y="245" width="22.0" height="22" rx="5" fill="#68549b"/>
+<text x="634" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.5%</text>
+<rect x="750" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="750" y="245" width="150.2" height="22" rx="5" fill="#68549b"/>
+<text x="934" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">2.13</text>
+<circle cx="51" cy="297" r="7" fill="#087b78"/>
+<text x="66" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="15">AURA</text>
+<rect x="150" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="150" y="287" width="111.5" height="22" rx="5" fill="#087b78"/>
+<text x="334" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">63.3%</text>
+<rect x="450" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="450" y="287" width="22.0" height="22" rx="5" fill="#087b78"/>
+<text x="634" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.5%</text>
+<rect x="750" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="750" y="287" width="42.2" height="22" rx="5" fill="#087b78"/>
+<text x="934" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.60</text>
+<text x="34" y="394" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Data: executed NS2 runs · the chart does not establish general superiority</text>
 </svg>

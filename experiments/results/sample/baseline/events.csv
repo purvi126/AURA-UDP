@@ -115,3 +115,4 @@ time,event,id,class,attempt,deadline
 3.5800000000000001,send,30,routine,1,10000.0
 3.63469,receive,30,routine,1,10000.0
 3.63469,deliver,30,routine,1,10000.0
+6.2000000000000002,finish,0,,0,

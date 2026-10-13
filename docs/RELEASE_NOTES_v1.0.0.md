@@ -1,5 +1,7 @@
 # AURA-UDP v1.0.0 — review release
 
+This document describes the frozen v1.0.0 release. The current branch later corrected critical-alert expiration timing and the throughput observation window, then reran the measured datasets. Use the current README and CSVs for results from current source.
+
 This release provides a reproducible NS2 2.35 comparison of one-shot datagrams, fixed Selective Repeat, and deadline-aware AURA transport, plus an editable Cisco Packet Tracer 9.0 smart-campus demonstration.
 
 ## Verified in this release
