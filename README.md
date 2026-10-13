@@ -27,6 +27,7 @@ From `/mnt/d/projects/AURA-UDP`:
 ```bash
 python3 -m unittest discover -s tests -v
 python3 scripts/experiments.py --output experiments/results/sample
+python3 scripts/multiseed.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
 python3 -m http.server 8000
 ```
@@ -49,10 +50,16 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 1. Run the tests and experiments above. Compare PDR, DDR, delay, retransmission overhead and goodput in the CSV and SVG.
 2. Inspect `events.csv` for `generate`, `send`, `timeout`, `receive`, `duplicate`, `deliver`, `late`, `ack`, and `expire` transitions.
 3. Optionally open `ns2.nam` with NAM if installed; no result calculation depends on NAM.
-4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). The routed path is configured; use the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) for addresses and additional IoT registration steps.
+4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). The routed path and native IoT devices are present; use the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) for addresses and remaining checks.
 
-## Limits and next steps
+## Current validation and limits
 
-The Packet Tracer `.pkt` contains two routers, two switches, three sensor/alert traffic-generator PCs, an operations PC, and a monitoring server. A simple ICMP PDU from PC0 to Server0 succeeded after ARP learning. Native Temperature Meter, Smoke Detector and Home Gateway registration, plus HTTP verification, remain to be added. No multi-seed confidence intervals, adaptive window sizing, router queue priority or custom C++ UDP header are implemented. The logical 64-byte goodput assumption is documented. A future evaluation should use more seeds and message rates and compare confidence intervals. See [progress](docs/AI_SETUP_PROGRESS.md).
+The [30-seed sweep](experiments/results/multiseed/summary.csv) covers moderate loss, tight deadlines, and twice the message rate: 270 NS2 runs. In moderate loss, mean DDR was 0.917 for AURA, 0.867 for fixed SR, and 0.863 for baseline. At the high message rate, it was 0.892, 0.658, and 0.883. With a tight deadline, AURA and SR both reached 0.121, below baseline's 0.163. AURA's PDR remained below fixed SR in all three conditions. See the [per-run results](experiments/results/multiseed/runs.csv), [paired differences](experiments/results/multiseed/paired.csv), and [settings](experiments/results/multiseed/config.json). These descriptive comparisons do not establish general superiority.
+
+The Packet Tracer file now includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors show wireless links and have Home Gateway selected as their IoT server. Server0 HTTP loaded from PC3. Gateway registered-device-list inspection and the other endpoint paths are still pending, so no release has been published.
+
+## Earlier limits
+
+No adaptive window sizing, router queue priority, custom C++ UDP header, or statistical significance test is implemented. The logical 64-byte goodput assumption is documented. See [progress](docs/AI_SETUP_PROGRESS.md).
 
 MIT licensed; see [LICENSE](LICENSE).

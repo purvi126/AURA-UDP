@@ -1,33 +1,22 @@
-# AI setup progress
+# Implementation status
 
-Updated 2026-10-12.
+Updated 2026-10-13.
 
-## Completed
+## Working
 
-- Initialized a new local Git repository on `main` at `D:\projects\AURA-UDP`.
-- Implemented live NS2 2.35 datagram simulations for baseline UDP-like one-shot delivery, fixed Selective Repeat, and AURA.
-- Added independently lossy data/ACK paths, background CBR load, variable delay, deadline, loss probability, message interval and documented seed.
-- Added CSV event metrics, measured sample and stress scenarios, SVG comparison charts, and a local CSV-backed interactive dashboard.
-- Created editable Packet Tracer 9.0 `.pkt` topology with two routers, two switches, four PCs and a monitoring server. Configured router interfaces, static routes and all host addresses. A PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. The guide covers adding a Home Gateway, Temperature Meter and Smoke Detector; these native IoT devices and registration are not yet in the `.pkt` file.
-- Added protocol, academic review, README, license, and Python CI workflow.
+- NS2 2.35 runs baseline, fixed Selective Repeat, and deadline-aware AURA over live data and ACK paths.
+- The Python analysis computes unique delivery, timely critical delivery, delay, logical goodput, and retry overhead. Unsent generated messages no longer produce negative retry overhead.
+- The checked-in 30-seed sweep covers moderate loss, tight deadlines, and higher message rate: 270 runs. Raw per-run, aggregate, paired, and configuration CSV/JSON files are under experiments/results/multiseed.
+- The dashboard compares the sweep and lets a reader step through actual sample message events.
+- The Packet Tracer 9.0 file has two routed LANs, a transit link, four PCs, Server0, a DLC100 Home Gateway, native Temperature Monitor, Smoke Detector, and a wireless monitoring tablet. The IoT devices show wireless association and select Home Gateway as their IoT server. Static internal addresses were assigned after DHCP failed.
+- PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. Server0 HTTP was On, and PC3 loaded its page at 10.10.30.10.
+- Eight WSL integration/unit tests pass.
 
-## Validation
+## Open verification
 
-- `python3 -m unittest discover -s tests -v`: 7 tests passed in WSL with NS2 2.35.
-- `python3 scripts/experiments.py --output experiments/results/sample`: passed with seed 7.
-- Stress run: loss .3, delay 80 ms, background 180 Kb/s, deadline 120 ms, seed 11: passed. DDR was .125 for all three modes; no AURA improvement is claimed.
-- NAM visualization has not been opened or validated; trace output is produced.
-- Packet Tracer ICMP check: first two PC0-to-Server0 simple PDUs failed during address resolution; a subsequent PDU succeeded. HTTP and native IoT registration have not been verified.
+1. Recheck that TEMP-SENSOR and SMOKE-SENSOR appear in the gateway's registered-device list from Tablet PC0, which can load the gateway's login page. The list was empty before static sensor addressing. The gateway Internet address timed out from PC3.
+2. Verify PC1 and PC2 to Server0 and PC3 to the sensor LAN, allowing for initial ARP resolution.
+3. Recheck the saved Packet Tracer file after those steps.
+4. Publish a release only when those checks and project tests pass. No release has been published.
 
-## Git and publication
-
-- Commits: `cc746c0` repository and CI; `02bb2d8` NS2 transports; `f37b704` analytics, runs, tests; `0be014d` documentation; `6772261` expanded protocol tests and Packet Tracer guide.
-- GitHub CLI 2.102.0 was installed through winget and authenticated as `purvi126`. Created and pushed the public repository at <https://github.com/purvi126/AURA-UDP>; `main` tracks `origin/main`. GitHub Actions Python checks passed on the initial push.
-- `7825c72` added the CSV-backed dashboard and stress plot before the initial push.
-
-## Next actions
-
-1. Add Home Gateway, Temperature Meter and Smoke Detector to the editable Packet Tracer topology and verify registration.
-2. Verify HTTP service and all endpoint paths in Packet Tracer.
-3. Run broader multi-seed and traffic-intensity sweeps before drawing performance conclusions.
-4. Prepare a release only after the remaining Packet Tracer criteria are satisfied.
+The sweep is descriptive. AURA improved mean deadline delivery in moderate and high-rate cases, but did not improve it in the tight-deadline case; fixed SR retained higher PDR.
