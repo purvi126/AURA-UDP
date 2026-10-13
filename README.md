@@ -33,8 +33,15 @@ python3 -m unittest discover -s tests -v
 python3 scripts/experiments.py --output experiments/results/sample
 python3 scripts/multiseed.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
+```
+
+To use the dashboard, start a local server **from the repository root in a separate terminal** and leave it running:
+
+```bash
 python3 -m http.server 8000
 ```
+
+Then open [the local dashboard](http://localhost:8000/python/dashboard/). It guides you through three steps: choose a network condition, compare outcomes, and follow one recorded message. If the browser says the page cannot be reached, check that the server terminal is still running and that you started it from the repository root. On Windows, `python -m http.server 8000` works as well.
 
 Run a single mode:
 
@@ -43,7 +50,7 @@ ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-demo
 python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
-Open `http://localhost:8000/python/dashboard/` to explore the measured CSVs. The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms]`. The output contains `events.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Modify the arguments to vary loss, delay, congestion, message rate and deadlines. Each mode uses the same configured topology, traffic schedule and initial seed.
+The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms]`. The output contains `events.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Modify the arguments to vary loss, delay, congestion, message rate and deadlines. Each mode uses the same configured topology, traffic schedule and initial seed.
 
 ## Measured sample
 
@@ -56,9 +63,17 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 3. Optionally open `ns2.nam` with NAM if installed; no result calculation depends on NAM.
 4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). From PC3, browse to `http://10.10.30.10` to see the AURA campus page. From Tablet PC0, browse to `http://192.168.25.1`, sign in to the lab gateway, and inspect the registered temperature and smoke devices. The [build guide](packet_tracer/documentation/BUILD_GUIDE.md) has the full address plan.
 
-| Routed HTTP page | Registered native IoT devices |
-|---|---|
-| ![Custom AURA page loaded from PC3](packet_tracer/documentation/media/server-http.jpg) | ![Gateway page showing both sensors and telemetry fields](packet_tracer/documentation/media/gateway-devices.jpg) |
+### Screenshot 1 — Routed HTTP page
+
+![Packet Tracer PC3 browser showing the custom AURA page served by Server0](packet_tracer/documentation/media/server-http.jpg)
+
+PC3 loads the page from Server0 across the campus routers. This screenshot verifies the HTTP endpoint from a routed client; it does not measure AURA's transport performance.
+
+### Screenshot 2 — Registered native IoT devices
+
+![Packet Tracer Home Gateway device page listing the temperature monitor and smoke detector with telemetry fields](packet_tracer/documentation/media/gateway-devices.jpg)
+
+Tablet PC0 opens the Home Gateway device list. The Temperature Monitor and Smoke Detector appear as registered devices with their telemetry fields. For the addresses, login steps, and topology, use the [Packet Tracer build guide](packet_tracer/documentation/BUILD_GUIDE.md).
 
 ## Current validation and limits
 
