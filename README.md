@@ -2,6 +2,8 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
+[Download the validated v1.0.0 review release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0), including the editable Packet Tracer topology and measured 30-seed CSVs.
+
 **Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer**
 
 This Computer Networks Lab project studies whether application-layer reliability and deadline awareness help safety alerts in a smart-campus network. It compares one-shot datagrams, fixed Selective Repeat, and an adaptive deadline-aware variant in **NS2 2.35**. A separate [Packet Tracer build guide](packet_tracer/documentation/BUILD_GUIDE.md) explains a campus connectivity demonstration. Packet Tracer does not implement AURA.

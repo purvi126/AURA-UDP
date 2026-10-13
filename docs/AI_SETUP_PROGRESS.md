@@ -12,12 +12,12 @@ Updated 2026-10-13.
 - PC0-to-Server0 simple ICMP PDU succeeded after ARP learning. PC1 and PC2 each received four of four server ping replies; PC3 received four of four replies from PC2. PC3 loaded the custom AURA page over HTTP from Server0.
 - Nine WSL integration/unit tests pass, including direct priority and deadline assertions. A fresh 270-run sweep reproduced all three committed CSVs byte for byte.
 
-## Release readiness
+## Release
 
-Core connectivity, native IoT registration, HTTP, automated tests, and the multi-seed reproduction checks have passed. The [validation record](VALIDATION.md) lists direct observations and remaining limits. Publish the review release after the final commit passes GitHub Actions.
+Core connectivity, native IoT registration, HTTP, automated tests, and the multi-seed reproduction checks have passed. The [validation record](VALIDATION.md) lists direct observations and remaining limits. The [v1.0.0 review release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) is published from the CI-validated `7727f9c` commit with the `.pkt` file and measured CSVs attached.
 
 The sweep is descriptive. AURA improved mean deadline delivery in moderate and high-rate cases, but did not improve it in the tight-deadline case; fixed SR retained higher PDR.
 
 ## GitHub and recovery
 
-The repository is [purvi126/AURA-UDP](https://github.com/purvi126/AURA-UDP) on `main`. Earlier pushed milestones include `84ba5af` (30-seed evaluation and event trace), `5672b20` (native IoT topology), and `14868d2` (NS2 CI and rollback guide). The published `checkpoint-2026-10-13-evaluation` and `checkpoint-2026-10-13-iot` tags allow inspection of those stages. See [ROLLBACK.md](ROLLBACK.md) for non-destructive recovery. The remaining publication step is the review release after the final push's CI result is green.
+The repository is [purvi126/AURA-UDP](https://github.com/purvi126/AURA-UDP) on `main`. Pushed milestones include `84ba5af` (30-seed evaluation and event trace), `5672b20` (native IoT topology), `14868d2` (NS2 CI and rollback guide), `1214329` (final topology, evidence, and nine-test validation), and `7727f9c` (current CI actions). The `checkpoint-2026-10-13-evaluation`, `checkpoint-2026-10-13-iot`, and `v1.0.0` tags allow inspection of those stages. See [ROLLBACK.md](ROLLBACK.md) for non-destructive recovery.
