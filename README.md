@@ -2,7 +2,7 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
-[Download the v1.0.0 review release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0), including the editable Packet Tracer topology and its original measured CSVs. The current branch contains subsequent protocol and reporting corrections; use the results linked below for the current source.
+[Download the verified v1.1.0 release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0), including the editable Packet Tracer topology, measured 30-seed CSVs, and readable evidence visuals. The earlier [v1.0.0 release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) remains a rollback checkpoint.
 
 **Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer**
 

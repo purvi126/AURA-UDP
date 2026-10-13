@@ -1,6 +1,6 @@
 # Implementation status
 
-Updated 2026-10-13.
+Updated 2026-10-14.
 
 ## Working
 
@@ -14,10 +14,10 @@ Updated 2026-10-13.
 
 ## Release
 
-Core connectivity, native IoT registration, HTTP, automated tests, and the multi-seed reproduction checks have passed. The [validation record](VALIDATION.md) lists direct observations and remaining limits. The [v1.0.0 review release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) is published from the CI-validated `7727f9c` commit with the `.pkt` file and measured CSVs attached.
+Core connectivity, native IoT registration, HTTP, automated tests, and the multi-seed reproduction checks have passed. The [validation record](VALIDATION.md) lists direct observations and remaining limits. The [v1.1.0 verified engineering release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) is published from the CI-validated `f314c59` commit with the editable `.pkt` file, current measured CSVs, and evidence visuals attached.
 
-The sweep is descriptive. AURA improved mean deadline delivery in moderate and high-rate cases, but did not beat baseline in the tight-deadline case; fixed SR retained higher PDR. Throughput and logical goodput now use a common configured observation window. The v1.0.0 release is a frozen prior checkpoint; current branch results differ from it.
+The sweep is descriptive. AURA improved mean deadline delivery in moderate and high-rate cases, but did not beat baseline in the tight-deadline case; fixed SR retained higher PDR. Throughput and logical goodput use a common configured observation window. The v1.0.0 release remains a frozen prior checkpoint.
 
 ## GitHub and recovery
 
-The repository is [purvi126/AURA-UDP](https://github.com/purvi126/AURA-UDP) on `main`. Pushed milestones include `84ba5af` (30-seed evaluation and event trace), `5672b20` (native IoT topology), `14868d2` (NS2 CI and rollback guide), `1214329` (final topology, evidence, and nine-test validation), and `7727f9c` (current CI actions). The `checkpoint-2026-10-13-evaluation`, `checkpoint-2026-10-13-iot`, and `v1.0.0` tags allow inspection of those stages. See [ROLLBACK.md](ROLLBACK.md) for non-destructive recovery.
+The repository is [purvi126/AURA-UDP](https://github.com/purvi126/AURA-UDP) on `main`. Pushed milestones include `84ba5af` (30-seed evaluation), `5672b20` (native IoT topology), `7727f9c` (first review release), and `f314c59` (corrected protocol, measurements, visuals, and CI). The `checkpoint-2026-10-13-evaluation`, `checkpoint-2026-10-13-iot`, `v1.0.0`, and `v1.1.0` tags allow inspection of those stages. See [ROLLBACK.md](ROLLBACK.md) for non-destructive recovery.
