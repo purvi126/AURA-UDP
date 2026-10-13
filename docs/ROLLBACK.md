@@ -2,10 +2,13 @@
 
 Every published change is a Git commit on main. The Packet Tracer file, experiment inputs, measured CSVs, dashboard, and documentation are committed together in reviewable checkpoints.
 
+Named checkpoint tags are also available: checkpoint-2026-10-13-evaluation points to the 30-seed and dashboard stage, and checkpoint-2026-10-13-iot points to the Packet Tracer IoT stage. Tags identify snapshots; they are not releases.
+
 To inspect the checkpoints:
 
 ```bash
 git log --oneline --decorate -10
+git tag --list 'checkpoint-*'
 git show --stat <commit>
 ```
 
