@@ -1,0 +1,13 @@
+scenario,metric,comparison,seeds,aura_minus_comparison_mean,aura_better,tied,aura_worse
+moderate,pdr,baseline,30,0.15777777777777777,29,1,0
+moderate,pdr,sr,30,-0.016666666666666663,0,17,13
+moderate,ddr,baseline,30,0.05416666666666667,11,14,5
+moderate,ddr,sr,30,0.05,15,9,6
+tight_deadline,pdr,baseline,30,0.10000000000000002,21,0,9
+tight_deadline,pdr,sr,30,-0.23,0,0,30
+tight_deadline,ddr,baseline,30,-0.041666666666666664,2,19,9
+tight_deadline,ddr,sr,30,0.0,2,27,1
+high_rate,pdr,baseline,30,0.14444444444444443,30,0,0
+high_rate,pdr,sr,30,-0.015555555555555552,0,17,13
+high_rate,ddr,baseline,30,0.008333333333333333,10,12,8
+high_rate,ddr,sr,30,0.23333333333333334,23,5,2

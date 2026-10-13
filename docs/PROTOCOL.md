@@ -18,4 +18,4 @@ PDR is unique delivered messages divided by generated messages. DDR is critical 
 
 ## Limitations
 
-The fixed 30-message workload and short runs are demonstrations, not statistical claims. Background CBR has no application event logging. A single seed does not support confidence intervals. Priority applies to sender admission, not router queue scheduling. Packet Tracer is a separate connectivity demonstration and does not run AURA. The experiment currently varies generation class by fixed schedule; traffic intensity is controlled mainly with background CBR rate.
+Each run has a fixed 30-message workload. The 30-seed sweep covers three configured scenarios, including a higher generation rate, but remains a short synthetic evaluation rather than a general performance claim. Background CBR has no application event logging. Priority applies to sender admission, not router queue scheduling. Packet Tracer is a separate connectivity demonstration and does not run AURA.

@@ -12,7 +12,7 @@ The objective is to measure PDR, deadline delivery ratio, delay, goodput and ret
 
 Use identical NS2 topology, initial seeds and message generation schedule for the three modes. The simulation creates 30 messages, every fourth critical, at 120 ms spacing. An independent CBR flow shares a 128 Kb/s bottleneck. Packet errors are injected on both data and ACK directions. NS2 creates packet traces and application events. Python deduplicates message IDs and computes metrics. [Sample CSV](../experiments/results/sample/summary.csv) and [stress CSV](../experiments/results/stress/summary.csv) are actual executed runs; do not generalize from them.
 
-The sample shows all modes delivered critical alerts by deadline; reliability improved total PDR but added retries. Under the tighter stress case, DDR was low for every mode and AURA did not beat baseline. This is evidence that deadline awareness alone cannot overcome a slow congested path and that priority admission may need a workload with meaningful queued critical messages or link-level scheduling to affect DDR.
+The 30-seed sweep adds moderate-loss, tight-deadline, and higher-message-rate conditions, with 270 runs in total. Mean DDR in moderate loss was 0.917 for AURA, 0.867 for fixed SR, and 0.863 for baseline. At the high message rate, it was 0.892, 0.658, and 0.883. In the tight-deadline condition, AURA and SR both reached 0.121, below baseline's 0.163. Fixed SR retained higher PDR throughout. These are descriptive outcomes of this short synthetic workload, not a universal superiority claim. The tight-deadline outcome shows that sender deadline awareness alone cannot overcome a slow congested path.
 
 ## Review presentation outline
 
@@ -20,6 +20,6 @@ The sample shows all modes delivered critical alerts by deadline; reliability im
 2. NS2 topology, independent loss on data and ACK paths, Packet Tracer scope.
 3. State machine and three mode differences.
 4. Reproducible commands and representative event trace.
-5. Sample and stress results with limitations.
+5. Sample, stress, and 30-seed results with limitations.
 6. Live NS2 run and Packet Tracer ping/HTTP demonstration.
-7. Future work: multi-seed trials, traffic intensity sweep, queue priority and adaptive window.
+7. Future work: larger and more varied workloads, router queue priority, adaptive window, and formal uncertainty analysis.

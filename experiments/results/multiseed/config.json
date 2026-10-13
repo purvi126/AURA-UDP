@@ -1,0 +1,28 @@
+{
+  "first_seed": 1,
+  "seeds": 30,
+  "scenarios": {
+    "moderate": {
+      "loss": 0.15,
+      "delay_ms": 40,
+      "background_kbps": 80,
+      "deadline_ms": 300,
+      "interval_ms": 120
+    },
+    "tight_deadline": {
+      "loss": 0.3,
+      "delay_ms": 80,
+      "background_kbps": 180,
+      "deadline_ms": 120,
+      "interval_ms": 120
+    },
+    "high_rate": {
+      "loss": 0.15,
+      "delay_ms": 40,
+      "background_kbps": 120,
+      "deadline_ms": 300,
+      "interval_ms": 60
+    }
+  },
+  "interpretation": "Descriptive seed sweep; no statistical significance claim."
+}

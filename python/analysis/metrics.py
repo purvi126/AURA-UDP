@@ -11,10 +11,12 @@ def calculate(path):
     generated = {int(r["id"]): r for r in rows if r["event"] == "generate"}
     delivered = {}
     sends = 0
+    sent_ids = set()
     for row in rows:
         mid = int(row["id"])
         if row["event"] == "send":
             sends += 1
+            sent_ids.add(mid)
         elif row["event"] == "deliver" and mid not in delivered:
             delivered[mid] = row
     n = len(generated)
@@ -34,7 +36,8 @@ def calculate(path):
         "avg_delay_ms": 1000 * sum(delays) / len(delays) if delays else None,
         "throughput_messages_per_s": len(delivered) / span,
         "goodput_bps_logical_64B": 8 * 64 * len(delivered) / span,
-        "retransmission_overhead": (sends - n) / n if n else 0,
+        # Generated messages may expire in the queue without a first send.
+        "retransmission_overhead": (sends - len(sent_ids)) / n if n else 0,
         "sends": sends,
     }
 

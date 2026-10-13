@@ -26,6 +26,17 @@ class MetricsTest(unittest.TestCase):
             self.assertEqual(result["ddr"], 1)
             self.assertEqual(result["retransmission_overhead"], 1)
 
+    def test_unsent_generated_message_is_not_negative_retry_overhead(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "events.csv"
+            with path.open("w", newline="") as f:
+                w = csv.writer(f)
+                w.writerow(["time", "event", "id", "class", "attempt", "deadline"])
+                w.writerow([0, "generate", 1, "critical", 0, .1])
+                w.writerow([0, "generate", 2, "routine", 0, .1])
+                w.writerow([.01, "send", 1, "critical", 1, .1])
+            self.assertEqual(calculate(path)["retransmission_overhead"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

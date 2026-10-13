@@ -2,35 +2,41 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AURA-UDP measured results</title>
+<title>AURA-UDP | Network lab</title>
 <style>
-  body{font:16px system-ui,sans-serif;max-width:1000px;margin:3rem auto;padding:0 1.5rem;color:#172330;background:#f7f9fc}
-  h1{margin-bottom:.2rem}p{line-height:1.5}select{font:inherit;padding:.4rem;border-radius:.4rem}
-  .card{background:white;border:1px solid #dce4ee;border-radius:.8rem;padding:1.4rem;margin-top:1.5rem}
-  table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.65rem;border-bottom:1px solid #e3e8ef}th{background:#edf2f8}
-  .bar{height:1.3rem;background:#dce4ef;position:relative;border-radius:.3rem;overflow:hidden}.fill{height:100%;background:#287f9e}
-  .value{font-variant-numeric:tabular-nums}small{color:#536271}
+  body{font:16px system-ui,sans-serif;max-width:1050px;margin:3rem auto;padding:0 1.5rem 4rem;color:#eaf4f7;background:#071b2b}
+  h1{font-size:clamp(2.7rem,7vw,5rem);letter-spacing:-.06em;margin:.2rem 0}p{line-height:1.5;color:#bed1d8}
+  select,button{font:inherit;padding:.5rem;border:1px solid #49758a;border-radius:.5rem;background:#183b50;color:white}button{cursor:pointer}
+  .card{background:#102c3e;border:1px solid #2a4e61;border-radius:1rem;padding:1.4rem;margin-top:1.2rem}
+  table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.65rem;border-bottom:1px solid #315060}th{color:#a4c2cc}
+  .bar{height:1.3rem;background:#28495b;border-radius:.3rem;overflow:hidden}.fill{height:100%;background:#5ce3bd}
+  small{color:#adc3ce}.flow{display:flex;gap:.6rem;flex-wrap:wrap;margin:1.5rem 0}.flow span{padding:.6rem;background:#173b50;border-radius:.5rem}.flow b{color:#5ce3bd}
+  .trace{border-left:3px solid #5ce3bd;padding:.6rem 1rem;min-height:7rem}a{color:#5ce3bd}
 </style>
 <h1>AURA-UDP</h1>
-<p>Interactive view of CSV output from executed NS2 simulations.</p>
-<label>Scenario <select id="scenario"><option value="sample">Sample: moderate loss</option><option value="stress">Stress: tight deadline</option></select></label>
-<label> Metric <select id="metric"><option value="pdr">Packet delivery ratio</option><option value="ddr">Deadline delivery ratio</option><option value="avg_delay_ms">Average delay (ms)</option><option value="retransmission_overhead">Retransmission overhead</option><option value="goodput_bps_logical_64B">Logical goodput (bps)</option></select></label>
-<section class="card" id="chart" aria-live="polite"></section>
-<section class="card"><h2>All measured metrics</h2><div id="table"></div></section>
-<p><small>DDR counts timely critical deliveries over all generated critical messages. Each message ID is counted once. One run per scenario; no statistical significance is implied.</small></p>
+<p>Watch a critical alert cross a lossy campus link, then compare 270 measured NS2 runs across 30 seeds and three traffic conditions.</p>
+<div class="flow"><span>Sensor alert</span><b>→</b><span>Lossy router</span><b>→</b><span>Monitoring receiver</span><b>→</b><span>ACK or retry</span></div>
+<section class="card"><h2>Three ways to send</h2><p><strong>Baseline</strong> sends once. <strong>Selective Repeat</strong> retries missing messages. <strong>AURA</strong> prioritizes critical alerts, adapts its retry timer, and stops at the deadline.</p></section>
+<section class="card"><h2>Compare the outcomes</h2>
+<label>Traffic condition <select id="scenario"><option value="moderate">Moderate loss</option><option value="tight_deadline">Tight deadline</option><option value="high_rate">High message rate</option></select></label>
+<label> Measure <select id="metric"><option value="ddr">Timely critical alerts (DDR)</option><option value="pdr">Messages delivered (PDR)</option><option value="avg_delay_ms">Average delay (ms)</option><option value="retransmission_overhead">Extra sends per message</option></select></label>
+<div id="chart" aria-live="polite"></div><div id="table"></div></section>
+<section class="card"><h2>Watch one message unfold</h2><p>Step through application events recorded in the checked-in sample run.</p><label>Transport <select id="mode"><option value="baseline">Baseline</option><option value="sr">Selective Repeat</option><option value="aura">AURA</option></select></label><label> Message <select id="message"></select></label><div class="trace" id="trace" aria-live="polite"></div><p><button id="back">← Previous</button> <button id="next">Next event →</button> <span id="position"></span></p></section>
+<p><small>DDR counts critical alerts delivered before their individual deadlines. Bars show means and the table shows standard deviations across 30 seeds. These are descriptive results for this simulated workload. Packet Tracer is a separate campus connectivity demonstration.</small></p>
 <script>
+const $=s=>document.querySelector(s);
 function parseCSV(text){let lines=text.trim().split(/\r?\n/);let keys=lines.shift().split(',');return lines.map(line=>Object.fromEntries(line.split(',').map((v,i)=>[keys[i],v])))}
+let summary=[],events=[],step=0;
 async function render(){
-  let scenario=document.querySelector('#scenario').value, metric=document.querySelector('#metric').value;
-  let response=await fetch(`../../experiments/results/${scenario}/summary.csv`);
-  if(!response.ok){document.querySelector('#chart').textContent='Could not load measured CSV.';return}
-  let rows=parseCSV(await response.text()),max=Math.max(1,...rows.map(r=>+r[metric]));
-  document.querySelector('#chart').innerHTML=`<h2>${document.querySelector('#metric').selectedOptions[0].textContent}</h2>`+
-    rows.map(r=>`<p><strong>${r.mode}</strong> <span class="value">${Number(r[metric]).toFixed(3)}</span></p><div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,100*Number(r[metric])/max))}%"></div></div>`).join('');
-  let cols=['mode','pdr','ddr','avg_delay_ms','retransmission_overhead','goodput_bps_logical_64B'];
-  document.querySelector('#table').innerHTML='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
-    rows.map(r=>'<tr>'+cols.map(c=>`<td>${c==='mode'?r[c]:Number(r[c]).toFixed(3)}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+  let scenario=$('#scenario').value,metric=$('#metric').value;
+  if(!summary.length){let response=await fetch('../../experiments/results/multiseed/summary.csv');if(!response.ok){$('#chart').textContent='Could not load measured CSV.';return}summary=parseCSV(await response.text())}
+  let rows=summary.filter(r=>r.scenario===scenario),max=Math.max(.001,...rows.map(r=>+r[metric+'_mean']));
+  $('#chart').replaceChildren(...rows.map(r=>{let wrap=document.createElement('div'),label=document.createElement('p'),bar=document.createElement('div'),fill=document.createElement('div');label.textContent=r.mode.toUpperCase()+' · '+Number(r[metric+'_mean']).toFixed(3);bar.className='bar';fill.className='fill';fill.style.width=Math.max(0,Math.min(100,100*Number(r[metric+'_mean'])/max))+'%';bar.append(fill);wrap.append(label,bar);return wrap}));
+  let table=document.createElement('table');table.innerHTML='<thead><tr><th>Mode</th><th>Mean</th><th>Standard deviation</th><th>Seeds</th></tr></thead>';let body=document.createElement('tbody');rows.forEach(r=>{let tr=document.createElement('tr');[r.mode,Number(r[metric+'_mean']).toFixed(3),Number(r[metric+'_sd']).toFixed(3),r.seeds].forEach(value=>{let td=document.createElement('td');td.textContent=value;tr.append(td)});body.append(tr)});table.append(body);$('#table').replaceChildren(table);
 }
-document.querySelectorAll('select').forEach(s=>s.addEventListener('change',render));render();
+async function loadTrace(){events=[];for(let mode of ['baseline','sr','aura']){let response=await fetch('../../experiments/results/sample/'+mode+'/events.csv');if(response.ok)events.push(...parseCSV(await response.text()).map(r=>({...r,mode})))}chooseMessage()}
+function chooseMessage(){let ids=[...new Set(events.filter(r=>r.mode===$('#mode').value&&r.event==='generate').map(r=>r.id))].slice(0,8);$('#message').replaceChildren(...ids.map(id=>{let o=document.createElement('option');o.value=id;o.textContent='Message '+id;return o}));step=0;showStep()}
+function showStep(){let trace=events.filter(r=>r.mode===$('#mode').value&&r.id===$('#message').value),r=trace[step];if(!r){$('#trace').textContent='No sample events available.';return}let meanings={generate:'Sensor creates the message.',send:'Sender puts a datagram on the link.',receive:'Datagram reaches the receiver.',deliver:'Receiver accepts this message once.',ack:'Sender learns it arrived.',timeout:'Sender waited too long for an ACK.',duplicate:'Receiver has seen this ID before.',expire:'Delivery deadline passed.',late:'Alert arrived too late.'};$('#trace').textContent=r.event.toUpperCase()+' · t='+Number(r.time).toFixed(3)+' s · '+r.class+' · attempt '+r.attempt+'. '+(meanings[r.event]||'Transport state changed.');$('#position').textContent=(step+1)+' / '+trace.length;$('#back').disabled=step===0;$('#next').disabled=step===trace.length-1}
+document.querySelectorAll('#scenario,#metric').forEach(s=>s.addEventListener('change',render));$('#mode').addEventListener('change',chooseMessage);$('#message').addEventListener('change',()=>{step=0;showStep()});$('#back').addEventListener('click',()=>{step--;showStep()});$('#next').addEventListener('click',()=>{step++;showStep()});render();loadTrace();
 </script>
 </html>
