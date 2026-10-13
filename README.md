@@ -10,30 +10,31 @@ This Computer Networks Lab project studies whether application-layer reliability
 
 ## Architecture
 
+The same campus question is explored in two independent tools. **NS2 produces performance measurements. Packet Tracer demonstrates the physical layout and working endpoints.**
+
+### NS2: where AURA actually runs
+
 ```mermaid
 flowchart TB
-  Q["Question: can urgent alerts reach a monitor on time?"]
-  subgraph SIM["1. NS2 — runs and measures the transport protocols"]
-    direction LR
-    N1["Source: 30 messages<br/>baseline · SR · AURA"] --> N2["Lossy link<br/>128 Kb/s bottleneck"] --> N3["Monitor: delivery<br/>and late-alert checks"] --> N4["Event logs → metrics<br/>charts and dashboard"]
-    N5["Competing traffic"] --> N2
-    N3 -. "ACKs for SR and AURA" .-> N1
-  end
-  subgraph CAMPUS["2. Cisco Packet Tracer — shows the campus devices and routes"]
-    direction LR
-    C1["Temperature + smoke sensors"] --> C2["Home Gateway"] --> C3["Tablet device view"]
-    C4["Sensor-side PC0"] --> C5["Router0 → Router1"] --> C6["Server0 HTTP page"]
-  end
-  Q --> N1
-  Q --> C1
-  Q --> C4
-  classDef ns fill:#e7f4f0,stroke:#087b78,color:#163b43
-  classDef cisco fill:#f1ecf8,stroke:#68549b,color:#20343a
-  class N1,N2,N3,N4,N5 ns
-  class C1,C2,C3,C4,C5,C6 cisco
+  N1["Simulated source<br/>30 messages; baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>delivery and late-alert checks"] --> N4["Event logs"] --> N5["Python metrics<br/>chart and dashboard"]
+  B["Competing traffic"] --> N2
+  classDef simulation fill:#e7f4f0,stroke:#087b78,color:#163b43
+  class N1,N2,N3,N4,N5,B simulation
 ```
 
-**The two lanes are separate.** No Packet Tracer sensor sends packets into NS2, and the Packet Tracer HTTP page does not execute AURA. NS2 provides measured delivery and retry results; Packet Tracer provides inspectable campus connectivity and IoT registration.
+For SR and AURA, the receiver sends acknowledgments back to the source; the source controls retries and critical-alert deadlines. The other sender adds traffic at the bottleneck.
+
+### Cisco Packet Tracer: where the campus is built
+
+```mermaid
+flowchart TB
+  C1["Temperature Monitor + Smoke Detector"] --> C2["Home Gateway"] --> C3["Tablet PC0<br/>registered-device view"]
+  P1["PC0 on sensor LAN"] --> P2["Router0"] --> P3["Router1"] --> P4["Server0<br/>HTTP page"]
+  classDef campus fill:#f1ecf8,stroke:#68549b,color:#20343a
+  class C1,C2,C3,P1,P2,P3,P4 campus
+```
+
+The sensor-to-gateway view and PC0-to-server HTTP route are **two separate checks** in the saved topology. No Packet Tracer sensor sends packets into NS2, and the Packet Tracer HTTP page does not execute AURA.
 
 | Where to look | What is implemented there |
 |---|---|
