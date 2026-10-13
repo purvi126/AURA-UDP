@@ -1,0 +1,11 @@
+* text=auto
+.gitattributes text eol=lf
+*.pkt binary
+*.md text eol=lf
+*.py text eol=lf
+*.tcl text eol=lf
+*.html text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.svg text eol=lf

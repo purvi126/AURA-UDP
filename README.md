@@ -52,15 +52,19 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 1. Run the tests and experiments above. Compare PDR, DDR, delay, retransmission overhead and goodput in the CSV and SVG.
 2. Inspect `events.csv` for `generate`, `send`, `timeout`, `receive`, `duplicate`, `deliver`, `late`, `ack`, and `expire` transitions.
 3. Optionally open `ns2.nam` with NAM if installed; no result calculation depends on NAM.
-4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). The routed path and native IoT devices are present; use the [build guide](packet_tracer/documentation/BUILD_GUIDE.md) for addresses and remaining checks.
+4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). From PC3, browse to `http://10.10.30.10` to see the AURA campus page. From Tablet PC0, browse to `http://192.168.25.1`, sign in to the lab gateway, and inspect the registered temperature and smoke devices. The [build guide](packet_tracer/documentation/BUILD_GUIDE.md) has the full address plan.
+
+| Routed HTTP page | Registered native IoT devices |
+|---|---|
+| ![Custom AURA page loaded from PC3](packet_tracer/documentation/media/server-http.jpg) | ![Gateway page showing both sensors and telemetry fields](packet_tracer/documentation/media/gateway-devices.jpg) |
 
 ## Current validation and limits
 
 The [30-seed sweep](experiments/results/multiseed/summary.csv) covers moderate loss, tight deadlines, and twice the message rate: 270 NS2 runs. In moderate loss, mean DDR was 0.917 for AURA, 0.867 for fixed SR, and 0.863 for baseline. At the high message rate, it was 0.892, 0.658, and 0.883. With a tight deadline, AURA and SR both reached 0.121, below baseline's 0.163. AURA's PDR remained below fixed SR in all three conditions. See the [per-run results](experiments/results/multiseed/runs.csv), [paired differences](experiments/results/multiseed/paired.csv), and [settings](experiments/results/multiseed/config.json). These descriptive comparisons do not establish general superiority.
 
-The Packet Tracer file now includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors show wireless links and have Home Gateway selected as their IoT server. Server0 HTTP loaded from PC3. Gateway registered-device-list inspection and the other endpoint paths are still pending, so no release has been published.
+The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC3 loaded the custom AURA HTTP page from Server0. See the [validation record](docs/VALIDATION.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 
-## Earlier limits
+## Limits
 
 No adaptive window sizing, router queue priority, custom C++ UDP header, or statistical significance test is implemented. The logical 64-byte goodput assumption is documented. See [progress](docs/AI_SETUP_PROGRESS.md).
 

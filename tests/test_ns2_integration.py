@@ -34,6 +34,15 @@ class NS2IntegrationTest(unittest.TestCase):
         rows = self.run_mode("aura", .3, 80, 180, 120)
         self.assertTrue(any(r["event"] == "expire" for r in rows))
         self.assertTrue(any(r["event"] == "late" for r in rows))
+        self.assertTrue(all(float(r["time"]) < float(r["deadline"])
+                            for r in rows if r["event"] == "send" and r["class"] == "critical"))
+
+    def test_critical_alert_admitted_ahead_of_queued_routine(self):
+        rows = self.run_mode("aura", 0, 40, 180, 300, interval=20)
+        first_send = {int(r["id"]): float(r["time"]) for r in rows
+                      if r["event"] == "send" and r["attempt"] == "1"}
+        # Message 6 is routine and was generated before critical message 9.
+        self.assertLess(first_send[9], first_send[6])
 
     def test_ack_loss(self):
         rows = self.run_mode("sr", .7, 20, 0, 500)
