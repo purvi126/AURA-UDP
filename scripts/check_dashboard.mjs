@@ -17,8 +17,20 @@ for (const [, selector] of script.matchAll(/\$\('#([^']+)'\)/g)) {
 for (const path of [
   'experiments/results/multiseed/summary.csv',
   'experiments/results/multiseed/config.json',
+  'experiments/results/ablation/summary.csv',
+  'experiments/results/ablation/paired.csv',
   ...['baseline', 'sr', 'aura'].map(mode => `experiments/results/sample/${mode}/events.csv`),
 ]) {
   if (!existsSync(resolve(base, path))) throw new Error(`Missing dashboard data: ${path}`);
+}
+const ablationSummary = readFileSync(resolve(base, 'experiments/results/ablation/summary.csv'), 'utf8');
+const ablationPairs = readFileSync(resolve(base, 'experiments/results/ablation/paired.csv'), 'utf8');
+for (const key of ['ddr', 'retransmission_overhead', 'routine_pdr', 'background_goodput_bps']) {
+  if (!ablationSummary.split('\n', 1)[0].includes(`${key}_mean`)) {
+    throw new Error(`Ablation summary is missing ${key}`);
+  }
+  if (!ablationPairs.includes(`,${key},no_feasibility,`)) {
+    throw new Error(`Ablation pairs are missing ${key}`);
+  }
 }
 console.log('Dashboard script, elements, and measured data paths are valid');

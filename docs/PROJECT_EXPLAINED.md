@@ -22,13 +22,13 @@ This project asks: **can a sender give urgent alerts a better chance of arriving
 3. It runs one of three sending rules over NS2 message agents:
    - **Baseline:** send once, with no acknowledgment or retry.
    - **Selective Repeat:** keep up to four messages in flight, acknowledge delivered messages, and retry missing ones, up to five sends per message.
-   - **AURA:** use acknowledgments and retries too, admit critical messages ahead of queued routine ones, adapt the retry timer from observed round-trip times, and stop retrying a critical alert when its deadline expires.
-4. NS2 records each meaningful step in `events.csv`: generation, sending, receiving, delivery, acknowledgment, retry, expiration, or late arrival. It also writes NS2 trace and optional NAM animation files.
-5. [The metrics code](../python/analysis/metrics.py) counts each message only once. [The experiment runner](../scripts/multiseed.py) repeats three network conditions with 30 random seeds and all three sending rules: **270 runs** in total. [The chart generator](../python/analysis/plot.py) and [the dashboard](../python/dashboard/index.html) display the saved results. The dashboard reads those files; opening it does not rerun NS2.
+   - **AURA:** use acknowledgments and retries too, put the earliest-due alerts first, allow routine messages regular turns, adapt the retry timer and small sender window, and skip a retry when its estimated travel time exceeds the alert's remaining lifetime.
+4. NS2 records each meaningful step in `events.csv`: generation, sending, receiving, delivery, acknowledgment, retry, expiration, abandonment, or late arrival. `control.csv` records sender decisions; `background.csv` records how much traffic reached the competing flow. NS2 also writes packet traces and optional NAM animation files.
+5. [The metrics code](../python/analysis/metrics.py) counts each message only once. [The experiment runner](../scripts/multiseed.py) repeats three network conditions with 30 seed indices and all three sending rules: **270 runs**. [The ablation runner](../scripts/ablation.py) repeats four AURA policy variants: **360 more runs**. [The chart generator](../python/analysis/plot.py) and [the dashboard](../python/dashboard/index.html) display the saved results. The dashboard reads those files; opening it does not rerun NS2.
 
 Two useful measurements are **PDR**, the fraction of all generated messages that eventually arrived, and **DDR**, the fraction of critical messages that arrived *before their deadline*. A late alert can count toward PDR but not DDR. More retries can improve arrival while also consuming bandwidth and time.
 
-The [measured 30-seed summary](../experiments/results/multiseed/summary.csv) includes a difficult tight-deadline case where all three methods deliver few critical alerts on time. AURA does not win every measurement; the results describe these short simulated conditions rather than a universal advantage.
+The [measured 30-seed summary](../experiments/results/multiseed/summary.csv) includes a difficult tight-deadline case where all three methods deliver few critical alerts on time. The [policy test](RESEARCH_EVALUATION.md) finds that skipping estimated-late retries saves some retry traffic under high load, but did not improve the on-time alert delivery ratio in these runs. This is a useful engineering finding, including a limitation to improve, rather than a universal performance claim.
 
 ## What happens inside Cisco Packet Tracer
 
@@ -44,9 +44,9 @@ The [readable evidence diagram](../packet_tracer/documentation/media/evidence-ov
 
 1. **See the campus:** open the `.pkt` file, browse from PC0 to Server0, then use Tablet PC0 to inspect the gateway's registered devices.
 2. **See the measurements:** open the [full comparison chart](../experiments/plots/multiseed.svg) or the [summary table](../experiments/results/multiseed/summary.csv). These were produced from NS2 runs, not Packet Tracer traffic.
-3. **Follow one message:** from the repository root, run `python3 -m http.server 8000 --bind 127.0.0.1` and open `http://localhost:8000/python/dashboard/`. Choose a condition, compare the modes, and step through a saved message's events. Keep the server terminal open while using the page.
+3. **Test the decision and follow one message:** from the repository root, run `python3 -m http.server 8000 --bind 127.0.0.1` and open `http://localhost:8000/python/dashboard/`. Choose a condition, compare the modes and four AURA variants, then step through a saved message's events. Keep the server terminal open while using the page.
 4. **Reproduce the experiment:** with NS2 2.35 available as `ns` in Ubuntu or WSL, follow the commands in the [README](../README.md). The [validation record](VALIDATION.md) lists the checks already performed.
 
 ## What this project does not claim
 
-Packet Tracer verifies the campus demonstration; it does not execute AURA or validate its performance. NS2 uses a synthetic, fixed-size workload rather than live campus sensors. The results are descriptive across three tested conditions, without a statistical significance claim. This implementation does not include adaptive window sizing, router queue priority, or a custom C++ UDP header. The gateway's lab login and wireless setup are not a production security design.
+Packet Tracer verifies the campus demonstration; it does not execute AURA or validate its performance. NS2 uses a synthetic, fixed-size workload rather than live campus sensors. The results are descriptive across three tested conditions, without a broad superiority claim. This implementation has only a small bounded window, no router queue priority or custom C++ UDP header, and no proven Internet-grade congestion fairness. The gateway's lab login and wireless setup are not a production security design.

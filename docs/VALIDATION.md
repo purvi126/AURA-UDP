@@ -12,7 +12,7 @@ Packet Tracer connectivity was checked on 2026-10-13 with Packet Tracer 9.0 on W
 | PC3 HTTP to Server0 on the same LAN | `http://10.10.30.10` rendered the custom AURA campus page; this is not a routed path |
 | Native IoT registration | Tablet PC0 opened Home Gateway at `192.168.25.1`; Devices listed both `TEMP-SENSOR` and `SMOKE-SENSOR` |
 | IoT telemetry view | Temperature and smoke alarm/level fields appeared on the gateway page |
-| Python and NS2 tests | Eighteen tests passed locally, including feasibility abandonment, bounded window growth, the full DDR denominator, competing-flow goodput, exact deadline expiration, and both chart formats |
+| Python and NS2 tests | Nineteen tests passed locally, including feasibility abandonment, bounded window growth and timeout reduction, the full DDR denominator, competing-flow goodput, exact deadline expiration, and both chart formats |
 | Transport sweep | 30 seeds × 3 conditions × 3 modes = 270 NS2 runs; a second full sweep reproduced `runs.csv`, `summary.csv`, and `paired.csv` byte for byte |
 | AURA ablation | 30 seeds × 3 conditions × 4 policies = 360 NS2 runs; a second full sweep reproduced `runs.csv`, `summary.csv`, and `paired.csv` byte for byte |
 | Dashboard | Node asset and element check passed with the new outcome choices and event labels |

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="610" viewBox="0 0 980 610" role="img" aria-labelledby="title desc">
+<title id="title">Deadline retry feasibility ablation</title>
+<desc id="desc">Thirty-seed means compare full AURA with the same policy without retry feasibility. The measured deadline-delivery gain is not established.</desc>
+<rect width="980" height="610" rx="20" fill="#f5f2eb"/>
+<text x="30" y="47" fill="#163b43" font-family="Arial,sans-serif" font-size="27" font-weight="700">Does skipping estimated-late retries help?</text>
+<text x="30" y="77" fill="#52666b" font-family="Arial,sans-serif" font-size="16">30 paired NS2 seeds per condition · DDR bars use a fixed 0–100% scale</text>
+<rect x="28" y="105" width="924" height="142" rx="13" fill="#fffefa" stroke="#d7dedb"/>
+<text x="46" y="133" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">Moderate loss</text>
+<text x="46" y="165" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Full AURA</text>
+<rect x="215" y="148" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="148" width="373.3" height="22" rx="5" fill="#087b78"/>
+<text x="626" y="165" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">93.3% DDR</text>
+<text x="770" y="165" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.367 extra sends</text>
+<text x="46" y="199" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Without feasibility</text>
+<rect x="215" y="182" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="182" width="375.0" height="22" rx="5" fill="#b45a32"/>
+<text x="626" y="199" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">93.8% DDR</text>
+<text x="770" y="199" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.372 extra sends</text>
+<text x="46" y="235" fill="#52666b" font-family="Arial,sans-serif" font-size="13">Full − without feasibility: -0.4 percentage points DDR; paired 95% interval [-2.5, +1.2]</text>
+<rect x="28" y="260" width="924" height="142" rx="13" fill="#fffefa" stroke="#d7dedb"/>
+<text x="46" y="288" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">Tight deadline</text>
+<text x="46" y="320" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Full AURA</text>
+<rect x="215" y="303" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="303" width="41.7" height="22" rx="5" fill="#087b78"/>
+<text x="626" y="320" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">10.4% DDR</text>
+<text x="770" y="320" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.659 extra sends</text>
+<text x="46" y="354" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Without feasibility</text>
+<rect x="215" y="337" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="337" width="41.7" height="22" rx="5" fill="#b45a32"/>
+<text x="626" y="354" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">10.4% DDR</text>
+<text x="770" y="354" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.659 extra sends</text>
+<text x="46" y="390" fill="#52666b" font-family="Arial,sans-serif" font-size="13">Full − without feasibility: +0.0 percentage points DDR; paired 95% interval [+0.0, +0.0]</text>
+<rect x="28" y="415" width="924" height="142" rx="13" fill="#fffefa" stroke="#d7dedb"/>
+<text x="46" y="443" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">High message rate</text>
+<text x="46" y="475" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Full AURA</text>
+<rect x="215" y="458" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="458" width="356.7" height="22" rx="5" fill="#087b78"/>
+<text x="626" y="475" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">89.2% DDR</text>
+<text x="770" y="475" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.313 extra sends</text>
+<text x="46" y="509" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Without feasibility</text>
+<rect x="215" y="492" width="400" height="22" rx="5" fill="#e9eeeb"/>
+<rect x="215" y="492" width="361.7" height="22" rx="5" fill="#b45a32"/>
+<text x="626" y="509" fill="#20343a" font-family="Arial,sans-serif" font-size="15" font-weight="700">90.4% DDR</text>
+<text x="770" y="509" fill="#52666b" font-family="Arial,sans-serif" font-size="14">0.334 extra sends</text>
+<text x="46" y="545" fill="#52666b" font-family="Arial,sans-serif" font-size="13">Full − without feasibility: -1.2 percentage points DDR; paired 95% interval [-4.2, +1.2]</text>
+<text x="30" y="588" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Measured tradeoff: fewer retries under high load, but no demonstrated DDR gain from feasibility.</text>
+</svg>
