@@ -2,7 +2,7 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
-[Download the verified v1.1.0 release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0), including the editable Packet Tracer topology, measured 30-seed CSVs, and readable evidence visuals. The earlier [v1.0.0 release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) remains a rollback checkpoint.
+[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), including the editable Packet Tracer topology, 1,260 measured NS2 runs, and readable vector evidence. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain rollback checkpoints.
 
 **Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer**
 
@@ -115,6 +115,8 @@ AURA's PDR remained below fixed SR in all three conditions. The tight-deadline c
 ![Readable 30-seed comparison of full AURA and AURA without the retry feasibility decision](experiments/plots/ablation.svg)
 
 See the [research evaluation and ablation](docs/RESEARCH_EVALUATION.md), [per-run results](experiments/results/multiseed/runs.csv), [paired differences](experiments/results/multiseed/paired.csv), and [settings](experiments/results/multiseed/config.json). These descriptive comparisons do not establish general superiority. Throughput and logical goodput use the same configured observation window for every mode within a condition.
+
+A second **630-run validation set** uses seed indices 31–60. In its high-rate ablation, full AURA and the version without retry feasibility both reached 90.4% DDR; full AURA made fewer retry sends on average, but that set's paired interval includes zero. The [held-out ablation](experiments/results/holdout/ablation/summary.csv) and [held-out transport comparison](experiments/results/holdout/multiseed/summary.csv) keep the limitation visible.
 
 The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. See the [validation record](docs/VALIDATION.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 

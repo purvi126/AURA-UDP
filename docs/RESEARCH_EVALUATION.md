@@ -6,7 +6,7 @@ Can a sender improve useful alert delivery and reduce retry cost by considering 
 
 ## Design
 
-The checked-in [three-mode sweep](../experiments/results/multiseed/config.json) runs baseline, fixed Selective Repeat (SR), and AURA for 30 substream indices in each of three scenarios: 270 runs. The [AURA ablation](../experiments/results/ablation/config.json) runs `full`, `no_feasibility`, `fixed_window`, and `legacy` for the same 30 indices and scenarios: 360 more runs. Every run generates 30 messages (eight critical), with the same schedule and topology for a given scenario. Data and ACK error models have separately seeded RNG streams. A common substream index pairs replications, but different mode choices consume different random draws, so packet-by-packet losses are not identical.
+The checked-in [three-mode sweep](../experiments/results/multiseed/config.json) runs baseline, fixed Selective Repeat (SR), and AURA for 30 substream indices in each of three scenarios: 270 runs. The [AURA ablation](../experiments/results/ablation/config.json) runs `full`, `no_feasibility`, `fixed_window`, and `legacy` for the same 30 indices and scenarios: 360 more runs. A separate [held-out transport sweep](../experiments/results/holdout/multiseed/config.json) and [held-out ablation](../experiments/results/holdout/ablation/config.json) repeat those 630 runs on indices 31–60, which were not used to choose the reported policy bounds. Every run generates 30 messages (eight critical), with the same schedule and topology for a given scenario. Data and ACK error models have separately seeded RNG streams. A common substream index pairs replications, but different mode choices consume different random draws, so packet-by-packet losses are not identical.
 
 The primary outcome is **DDR = timely first deliveries / all generated critical messages**. Lost, expired, and sender-abandoned alerts remain in the denominator. We also report overall and routine PDR, delivered-message delay, retries per generated message, and received background CBR goodput. Jain's index of critical and routine PDR is a class balance indicator, not a competing-flow fairness measurement. Summary means, per-run values, and paired differences with deterministic 5,000-resample percentile bootstrap 95% intervals are in the linked CSVs. These intervals describe the chosen workload and seeds; the scenarios and policy bounds were selected during development, so they are not preregistered confirmatory tests.
 
@@ -32,6 +32,10 @@ In the high-rate case, the feasibility policy reduced retry overhead by 0.021 se
 
 The background CBR goodput was recorded directly at its NS2 receiving agent. In the high-rate ablation, full AURA and no-feasibility AURA were 84.23 and 84.25 Kb/s, respectively; the paired interval for their difference crosses zero. That check gives no evidence of a substantial background-flow gain from feasibility in this scenario. It does not establish congestion fairness or Internet safety.
 
+## Fresh-seed validation (indices 31–60)
+
+The held-out sweep repeats the same scenarios and policies with 30 new substream indices. In the high-rate condition, full AURA and the no-feasibility variant both reached **90.4% DDR**. Full AURA used 0.339 extra sends per generated message versus 0.357 without the check: a mean difference of −0.018, with a paired interval from −0.038 to +0.002. The direction of the retry-cost result repeats, but this interval includes zero. In moderate loss, full AURA reached 94.2% DDR versus 94.6% without the check; in the tight case both reached 10.4%. This fresh set again provides **no DDR gain attributable to the feasibility decision**. The [held-out summary](../experiments/results/holdout/ablation/summary.csv), [per-run data](../experiments/results/holdout/ablation/runs.csv), and [paired intervals](../experiments/results/holdout/ablation/paired.csv) are checked in, as are the [three-mode results](../experiments/results/holdout/multiseed/summary.csv). These are separate validation replications, not additional conditions.
+
 ## Reproduce and inspect
 
 Run from the repository root in WSL with NS2 2.35 and Python 3.10+:
@@ -40,12 +44,16 @@ Run from the repository root in WSL with NS2 2.35 and Python 3.10+:
 python3 -m unittest discover -s tests -v
 python3 scripts/multiseed.py --output /tmp/aura-multiseed
 python3 scripts/ablation.py --output /tmp/aura-ablation
+python3 scripts/multiseed.py --first-seed 31 --output /tmp/aura-heldout-multiseed
+python3 scripts/ablation.py --first-seed 31 --output /tmp/aura-heldout-ablation
 cmp experiments/results/multiseed/runs.csv /tmp/aura-multiseed/runs.csv
 cmp experiments/results/ablation/runs.csv /tmp/aura-ablation/runs.csv
+cmp experiments/results/holdout/multiseed/runs.csv /tmp/aura-heldout-multiseed/runs.csv
+cmp experiments/results/holdout/ablation/runs.csv /tmp/aura-heldout-ablation/runs.csv
 ```
 
 For a single trace, run `ns ns2/run.tcl aura 0.15 40 120 300 1 /tmp/aura-trace 60 full` and inspect `events.csv` for `abandon`, `control.csv` for window and timeout changes, and `background.csv` for CBR delivery. Compare it with `no_feasibility` using a separate output directory. `ns2.tr` and `ns2.nam` retain packet-level evidence.
 
 ## Limits and next experiment
 
-The evaluation has only three short synthetic scenarios, eight critical messages per run, one CBR competitor, and a small window range. The forward-time estimate ignores queueing variance; the deadline-aware policy needs testing with larger and varied traffic, independent held-out seeds, longer observation windows, multiple competitors, and calibrated estimators. A wider window may expose congestion effects more clearly. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
+The evaluation has only three short synthetic scenarios, eight critical messages per run, one CBR competitor, and a small window range. The fresh seeds test replication, not a new workload. The forward-time estimate ignores queueing variance; the deadline-aware policy needs testing with larger and varied traffic, longer observation windows, multiple competitors, and calibrated estimators. A wider window may expose congestion effects more clearly. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
