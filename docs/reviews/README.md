@@ -1,6 +1,6 @@
 # Review 2 progress report
 
-The [PDF](AURA-UDP-Review-2-70-percent-progress.pdf) and [editable Word document](AURA-UDP-Review-2-70-percent-progress.docx) summarize the implementation as of 15 October 2026. The 70% figure is an overall planning estimate for the academic project, not a measured completion metric or a transport result.
+The [seven-page PDF](AURA-UDP-Review-2-70-percent-progress.pdf) and [editable Word document](AURA-UDP-Review-2-70-percent-progress.docx) are the Computer Networks Lab Review 2 report by Purvi Valmeti (24BCE2191) and M Harshita Sri (24BCE2471). They summarize implementation as of 15 October 2026. The 70–75% figure is an overall planning estimate for the academic project, not a measured completion metric or a transport result.
 
 The NS2 figure comes from [the 30-seed comparison](../../experiments/plots/multiseed.svg). The Packet Tracer captures are the original [routed HTTP](../../packet_tracer/documentation/media/routed-http-pc0.jpg) and [gateway device](../../packet_tracer/documentation/media/gateway-devices.jpg) screenshots. Their small source resolution is why the report uses explanatory captions.
 

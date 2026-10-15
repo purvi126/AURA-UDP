@@ -109,6 +109,10 @@ def page_break(doc):
 
 def build(output: Path, chart_png: Path) -> None:
     doc = Document()
+    doc.core_properties.title = "AURA-UDP Computer Networks Lab Review 2"
+    doc.core_properties.subject = "Seven-page implementation progress report"
+    doc.core_properties.author = "Purvi Valmeti; M Harshita Sri"
+    doc.core_properties.keywords = "AURA-UDP, NS2, Cisco Packet Tracer, Review 2"
     sec = doc.sections[0]
     sec.page_width = Inches(8.5)
     sec.page_height = Inches(11)
@@ -158,15 +162,29 @@ def build(output: Path, chart_png: Path) -> None:
     fld.set(qn("w:instr"), "PAGE")
     footer._p.append(fld)
 
+    course = doc.add_paragraph()
+    course.paragraph_format.space_after = Pt(5)
+    course.add_run("COMPUTER NETWORKS LAB  |  REVIEW 2").bold = True
     doc.add_paragraph("AURA-UDP implementation progress report", style="Title")
     p = doc.add_paragraph()
-    p.add_run("Review 2 milestone  •  Approximately 70% complete").bold = True
+    p.add_run("Implementation assessment  •  Approximately 70–75% complete").bold = True
     p.add_run("\nDeadline-aware reliable transport for critical campus IoT messages")
-    add_text(doc, "This report explains the project for a reader who has not seen the code. It records what is implemented and verified, what the NS2 experiments found, what Cisco Packet Tracer demonstrates, and what remains for the final review. The 70% figure is a planning estimate of overall project readiness, not a measured software metric.")
+    p = doc.add_paragraph()
+    p.paragraph_format.space_after = Pt(4)
+    p.add_run("Purvi Valmeti").bold = True
+    p.add_run("  •  24BCE2191")
+    p.add_run("\n")
+    p.add_run("M Harshita Sri").bold = True
+    p.add_run("  •  24BCE2471")
+    p = doc.add_paragraph()
+    p.paragraph_format.space_after = Pt(8)
+    p.add_run("GitHub repository: ")
+    p.add_run("https://github.com/purvi126/AURA-UDP")
+    add_text(doc, "This report explains what has been built, how it was checked, what the measured results show, and what remains for the final review. The 70–75% figure is an assessment of project readiness, not a measured software or network metric.")
     doc.add_heading("The project in one minute", level=1)
     add_text(doc, "A smart campus sends routine readings and urgent alerts to a monitoring room. A lost or late routine reading may be tolerable; a smoke alert is useful only if it arrives before its deadline. AURA-UDP asks whether a sender can improve timely alert delivery while controlling the cost of retransmissions.")
     add_text(doc, "Two tools show different parts of that question. NS2 runs the actual transport experiment and produces timing, loss, and retry measurements. Cisco Packet Tracer is an editable campus network model that shows routers, HTTP connectivity, an IoT gateway, and registered sensor devices. The tools do not exchange live packets.")
-    doc.add_heading("What the 70% milestone covers", level=1)
+    doc.add_heading("What is implemented at this milestone", level=1)
     table(doc, ["Workstream", "Implemented and evidenced", "Status"], [
         ("Transport in NS2", "Baseline, Selective Repeat, and AURA sender/receiver behavior; ACKs, deadlines, retry and congestion-window decisions.", "Built"),
         ("Evaluation", "Three scenarios, paired seed sweeps, policy ablations, fresh-seed checks, metrics, charts, and a local dashboard.", "Built"),
@@ -191,6 +209,7 @@ def build(output: Path, chart_png: Path) -> None:
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = p.add_run("Retry when estimated delivery time ≤ deadline − current time")
     run.bold = True
+    add_text(doc, "AURA takes RTT samples only from packets that have not been retransmitted, then uses smoothed RTT and variation to set a bounded retry timer. Its sender window starts at four messages, can grow to six after ACK progress, and falls back on a timeout. After three urgent admissions, a waiting routine message gets the next available slot. These are explicit lab rules, not a claim of a complete Internet congestion controller.")
     doc.add_heading("What is measured", level=2)
     add_bullet(doc, "Deadline delivery ratio (DDR): critical messages first delivered on time divided by all generated critical messages, including lost and abandoned ones.")
     add_bullet(doc, "Packet delivery ratio (PDR): unique messages delivered eventually divided by all generated messages. A late alert can count in PDR but not DDR.")
@@ -216,7 +235,6 @@ def build(output: Path, chart_png: Path) -> None:
     page_break(doc)
     doc.add_heading("Cisco Packet Tracer implementation", level=1)
     add_text(doc, "The editable packet_tracer/topology/AURA-UDP-campus.pkt models the campus side of the project. PC0 on the sensor LAN reaches Server0 at 10.10.30.10 through Router0 and Router1. Separately, a native Temperature Monitor and Smoke Detector register with HomeGateway0; Tablet PC0 displays them at 192.168.25.1.")
-    add_text(doc, "The original captures below are kept at a modest size because Packet Tracer exported them at only 513 pixels wide. Their captions state the tested observation so the small text is not the only evidence.")
     t = doc.add_table(rows=1, cols=2)
     t.autofit = False
     captures = [
@@ -233,16 +251,56 @@ def build(output: Path, chart_png: Path) -> None:
         r = cp.add_run(caption)
         r.font.size = Pt(8.5)
         r.italic = True
-    add_caption(doc, "Figures 2 and 3  Original Cisco Packet Tracer screenshots")
-    doc.add_heading("What these checks establish", level=2)
-    add_bullet(doc, "The saved PC0 browser loaded the custom server page over the two-router path.")
-    add_bullet(doc, "The gateway device list showed both native IoT devices and their displayed fields.")
-    add_text(doc, "Packet Tracer does not execute AURA or feed the NS2 simulation. A triggered smoke alarm transition has not been verified. The gateway and wireless settings are a lab demonstration, not a production security design.")
+    add_caption(doc, "Figures 2 and 3  Original 513-pixel Packet Tracer captures; captions identify the verified checks")
+    doc.add_heading("Addressing and the two verified paths", level=2)
+    table(doc, ["Segment", "Addresses", "Role"], [
+        ("Sensor LAN", "10.10.10.0/24", "PC0–PC2 and HomeGateway0 reach Router0."),
+        ("Router transit", "10.10.20.0/30", "Router0 and Router1 exchange routed traffic."),
+        ("Server LAN", "10.10.30.0/24", "Server0 is 10.10.30.10."),
+        ("Gateway IoT LAN", "192.168.25.0/24", "Tablet and native sensors use the gateway's local network."),
+    ], [1.55, 1.55, 3.83])
+    add_text(doc, "PC0's HTTP check crosses both routers to Server0. The separate tablet check stays on the gateway LAN and shows TEMP-SENSOR and SMOKE-SENSOR. PC3 can also load the page, but shares Server0's LAN, so that check alone does not prove routing.")
+    add_text(doc, "Packet Tracer does not run AURA or feed NS2. A triggered smoke transition remains unverified; the gateway settings are for a lab demonstration.")
 
     page_break(doc)
-    doc.add_heading("Verification and remaining work", level=1)
+    doc.add_heading("Results pipeline and reviewer interface", level=1)
+    add_text(doc, "A simulation run is useful only if its output can be inspected and counted consistently. The repository keeps the run configuration, the raw event sequence, per-run measurements, and summary tables. This allows a reviewer to trace a plotted value back to generated messages rather than accepting a dashboard number without evidence.")
+    table(doc, ["Stage", "Main file or output", "What happens"], [
+        ("1  Simulate", "ns2/run.tcl", "Builds the network and schedules data, ACKs, loss, deadlines, and competing CBR traffic."),
+        ("2  Record", "events.csv, control.csv, background.csv", "Logs message events, sender policy decisions, and received competing traffic."),
+        ("3  Calculate", "python/analysis/metrics.py", "Counts unique deliveries, on-time critical arrivals, delay, retry cost, and goodput."),
+        ("4  Repeat", "scripts/multiseed.py, scripts/ablation.py", "Runs the mode comparison and four policy variants for paired seed indices."),
+        ("5  Present", "summary.csv, SVG plots, dashboard", "Shows the measured comparisons and lets a reviewer inspect saved message events."),
+    ], [1.0, 2.55, 3.38])
+    doc.add_heading("Why the measurements are auditable", level=2)
+    add_text(doc, "Each message has an ID, so duplicate packet arrivals do not become multiple successful deliveries. A critical message that arrives after its deadline is still a delivery for PDR but is a DDR miss. Lost, expired, and sender-abandoned alerts remain in DDR's denominator. The competing flow is measured at its receiving agent rather than inferred from offered load. These choices prevent a large retry count from being mistaken for useful alert delivery.")
+    add_text(doc, "The experiment configuration is checked in beside the CSVs. Separate RNG streams model data and ACK errors. A matched seed index gives a consistent comparison framework, but different sending policies consume different random draws; it does not guarantee identical per-packet losses. The result tables report means and paired bootstrap intervals for the chosen scenarios, not a universal performance guarantee.")
+    doc.add_heading("What the dashboard does", level=2)
+    add_text(doc, "The local Python dashboard is a guided viewer for the saved NS2 experiment. A reviewer can choose a condition, compare baseline, fixed Selective Repeat, and AURA, inspect the feasibility-rule ablation, and follow one message through generation, sending, retry, delivery, or deadline miss. Its files live in python/dashboard/. It reads committed results; opening the page neither starts a simulator nor connects to Packet Tracer.")
+    doc.add_heading("Code and build checks", level=2)
+    add_text(doc, "The validation record reports 19 passing Python and NS2 checks. They cover deadline expiration, abandonment, bounded-window response, the DDR denominator, competing-flow goodput, and chart generation. GitHub Actions installs NS2, runs the tests, checks dashboard syntax and data paths, and executes small comparison and ablation smoke sweeps on pushes. Full 30-seed sweeps were also repeated and their key CSV outputs matched byte for byte.")
+
+    page_break(doc)
+    doc.add_heading("Review 2 completion assessment", level=1)
+    add_text(doc, "The present project is a working research prototype with an editable campus demonstration. The 70–75% estimate reflects completion of the main implementation and evidence pipeline, while allowing substantial work for stronger validation and the final demonstration. It is an assessment of deliverables, not a score assigned by the course or a percentage derived from lines of code.")
+    table(doc, ["Work area", "Evidence already available", "Work still needed"], [
+        ("NS2 transport", "Three sender modes, ACK handling, deadlines, RTT-based timing, and a bounded window execute in ns2/run.tcl.", "Refine the forward-time estimate; test behavior over wider queueing and congestion regimes."),
+        ("Experimental analysis", "1,260 recorded runs, per-run data, summaries, plots, policy ablations, and fresh-seed replication.", "Use longer and more varied workloads; study multiple competitors and fairness more directly."),
+        ("Packet Tracer campus", "Saved .pkt topology, routed PC0 HTTP, ping checks, native sensor registration, and gateway screenshots.", "Verify a triggered smoke transition and capture a clearer end-to-end demonstration sequence."),
+        ("Dashboard and documentation", "Local results viewer, README, protocol description, build guide, validation record, and this report.", "Polish final presentation and ensure a reviewer can reproduce the demonstration without setup surprises."),
+        ("Final claim", "Measured gains in two scenarios and a documented failure case; feasibility ablation is reported honestly.", "Decide whether an improved decision rule gives a repeatable DDR benefit without harming routine traffic."),
+    ], [1.28, 2.82, 2.83])
+    doc.add_heading("What the current results support", level=2)
+    add_bullet(doc, "AURA's complete sender policy improved on-time critical delivery against fixed SR in the moderate-loss and high-rate development scenarios.")
+    add_bullet(doc, "The tight-deadline setting exposed a real limitation: few critical alerts reached the receiver on time, and baseline did better than AURA.")
+    add_bullet(doc, "The newer feasibility decision saved some retry traffic in the development high-rate case, but no DDR improvement was demonstrated; fresh-seed high-rate DDR was equal with and without it.")
+    doc.add_heading("What should not be claimed yet", level=2)
+    add_text(doc, "The data do not establish that AURA is generally superior across networks or that its small adaptive window is Internet-grade congestion control. Packet Tracer shows connectivity and IoT registration, not AURA transport behavior. The native sensors in Packet Tracer are not live inputs to the NS2 workload. Keeping those boundaries explicit makes the final review stronger because every claim has a matching check.")
+
+    page_break(doc)
+    doc.add_heading("Verification and final review plan", level=1)
     add_text(doc, "The repository records 19 passing Python and NS2 checks, repeatable sweep outputs, and a GitHub Actions workflow that runs tests and small NS2 smoke sweeps. The saved Packet Tracer checks cover routed HTTP, pings, and native IoT registration. Versioned Git commits and releases provide rollback points.")
-    doc.add_heading("Remaining 30% for the final review", level=2)
+    doc.add_heading("Remaining work for the final review", level=2)
     add_bullet(doc, "Test longer and more varied workloads, more competing traffic, and a wider range of deadlines and loss conditions.")
     add_bullet(doc, "Improve the forward-time estimate with queueing uncertainty and evaluate whether the deadline decision improves DDR without starving routine traffic.")
     add_bullet(doc, "Strengthen congestion and fairness evaluation; the current bounded window is a lab heuristic, not an Internet-grade controller.")
