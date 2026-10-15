@@ -16,12 +16,15 @@ The same campus question is explored in two independent tools. **NS2 produces pe
 
 ```mermaid
 flowchart TB
-  N1["Simulated source<br/>30 messages; baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>delivery and late-alert checks"] --> N4["Event and background-flow logs"] --> N5["Python metrics<br/>chart and dashboard"]
-  N3 -- "ACK for SR / AURA" --> N1
-  N1 -- "Deadline and retry decision" --> N1
+  N1["Sensor workload<br/>30 generated messages"] --> P["Sender policy<br/>baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>unique delivery and deadline checks"]
+  N3 -- "ACK for SR and AURA" --> P
+  P --> L["Sender decisions<br/>send, retry, abandon, window"]
+  N3 --> E["Receiver events<br/>deliver or late"]
+  L --> N5["Python metrics<br/>vector chart and dashboard"]
+  E --> N5
   B["Competing traffic"] --> N2
   classDef simulation fill:#e7f4f0,stroke:#087b78,color:#163b43
-  class N1,N2,N3,N4,N5,B simulation
+  class N1,P,N2,N3,L,E,N5,B simulation
 ```
 
 For SR and AURA, the receiver sends acknowledgments back to the source; the source controls retries and critical-alert deadlines. The other sender adds traffic at the bottleneck.
