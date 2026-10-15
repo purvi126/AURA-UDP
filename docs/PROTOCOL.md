@@ -1,21 +1,37 @@
-# Protocol and experiment method
+# AURA transport policy and experiment method
 
-## Scope
+## Scope and state
 
-NS2 `Agent/Message` instances carry numbered application datagrams through NS2 links, queues and loss models. Both endpoints are implemented in OTcl. The bottleneck is a 128 Kb/s router-to-destination link with a 12-packet DropTail queue; a CBR flow shares it. The return path has an independent packet error model for ACK loss.
+NS2 `Agent/Message` instances carry numbered application datagrams over real simulated links and packet error models. The topology has a 128 Kb/s router-to-receiver bottleneck, a 12-packet DropTail queue, and a competing CBR source. Data and returning ACK packets have separate error models and RNG streams. All transport logic is in [`ns2/run.tcl`](../ns2/run.tcl); Packet Tracer is a separate connectivity model.
 
-## State machine
+A message follows `queued → pending → acked | failed | expired | abandoned`. The receiver delivers an ID once and ACKs every copy. A critical message delivered after its absolute deadline counts toward PDR but never DDR. Sender `expired` or `abandoned` does **not** prove the receiver failed to deliver it: its data packet might have arrived while its ACK was lost.
 
-`queued → pending → acked | failed | expired`. A receive at the destination first records a message ID, then sends an ACK for every copy. Duplicate copies are suppressed. A critical copy arriving after its absolute deadline is marked late but still counted in PDR, never DDR. Its sender can still receive an ACK. The sender keeps up to four unacknowledged messages in flight and retries an individual message when its timer fires, up to five attempts. AURA schedules an expiration event at each critical alert's absolute deadline, so an unacknowledged alert frees its sender window immediately, even if its retry timer is later. An already delivered alert may still expire at the sender if its ACK has not returned by that deadline.
+The baseline sends once with no ACK. Fixed Selective Repeat (SR) uses a four-message window, individual retries (up to five sends), and a fixed 300 ms timer. AURA adds an estimated retry feasibility decision, deadline ordering, routine admission guard, RTT-derived timer, and a bounded variable window.
 
-Baseline UDP sends once and does not ACK. Fixed Selective Repeat uses a 300 ms timeout and FIFO admission. AURA uses critical-first admission and an RTT-derived timeout (`SRTT + 4 × RTTVAR`, bounded 80–1000 ms), with 1.5× backoff on timeout. It does not retransmit critical traffic after expiration. RTT samples from retransmitted packets are excluded using Karn's rule. Adaptive window sizing is future work.
+## Deadline decision
 
-These are application-layer reliability mechanisms over NS2 datagram agents. `Agent/Message` is a built-in NS2 transport class, not a custom C++ UDP header implementation. The 64-byte logical payload in goodput is an analysis assumption; actual NS2 packet header sizes may differ.
+For critical message *i*, generation at time *gᵢ* sets the absolute deadline `Dᵢ = gᵢ + deadline_ms / 1000`. At each attempted **retransmission**, AURA computes:
 
-## Metrics
+```text
+remaining_i = D_i - now
+expected_forward = max(configured_one_way_link_delay, SRTT / 2)
+retry only when now < D_i and expected_forward <= remaining_i
+```
 
-PDR is unique delivered messages divided by generated messages. DDR is critical messages delivered by their deadline divided by all critical messages generated. Critical-alert success rate currently equals DDR because each critical message represents one alert. Delay is from generation to first delivery, averaged over delivered messages only. Retransmission overhead is `(send events − distinct IDs sent at least once) / generated messages`; queued messages that expire before their first send do not create negative overhead. Throughput is unique delivered messages divided by the interval from the first generation to the common `finish` event. Goodput uses 64 logical bytes per unique delivery over that same interval. Repeated receives or ACKs never add deliveries. Legacy logs without a `finish` event use their last event as a fallback end time and should not be compared to current fixed-window results.
+With no valid RTT sample, `expected_forward` is the configured one-way bottleneck delay. This is a lab heuristic, assuming roughly symmetric paths; it omits queue variance and processing time. First sends are always attempted while the alert is live, because the estimate must not suppress a potentially deliverable original. When a retry fails the feasibility check, `abandon` is logged and its sender slot is freed. An exact deadline event independently expires any still queued or pending critical message. The receiver records late arrivals even if the sender already stopped.
 
-## Limitations
+Critical messages are admitted in earliest-absolute-deadline order. After three consecutive critical admissions, the oldest waiting routine message gets the next available slot. This guard operates at the sender only; the router still uses DropTail and offers no class-specific scheduling.
 
-Each run has a fixed 30-message workload. The 30-seed sweep covers three configured scenarios, including a higher generation rate, but remains a short synthetic evaluation rather than a general performance claim. Background CBR has no application event logging. Priority applies to sender admission, not router queue scheduling. Packet Tracer is a separate connectivity demonstration and does not run AURA.
+## RTT, timer, and window
+
+Only ACKs for packets never retransmitted contribute RTT samples (Karn's rule). The initial sample sets `SRTT = R`, `RTTVAR = R / 2`; later samples use `RTTVAR ← 0.75·RTTVAR + 0.25·|SRTT − R|` and `SRTT ← 0.875·SRTT + 0.125·R`. AURA then sets `RTO = clamp(SRTT + 4·RTTVAR, 0.08, 1.0)` seconds. The initial RTO is 0.3 seconds, and timeout multiplies it by 1.5 up to 1 second. These estimator equations follow [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html), but the **80 ms floor and 1.5× timeout backoff are lab choices, not RFC 6298 compliant TCP timer behavior**.
+
+AURA starts with four messages in flight. After one current-window's worth of ACKs, it increases the window by one, to a maximum of six. A timeout halves the current window with a floor of four and resets the ACK counter. `control.csv` records window increases, timeouts, and abandoned retries. This small bounded response is an experimental heuristic, not a claim of Internet-safe congestion control. [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) motivates congestion safeguards for UDP applications; this project does not establish coexistence fairness against the CBR flow.
+
+## Metrics and reproducibility
+
+PDR = unique delivered messages / all generated messages. DDR = critical messages first delivered on or before their own deadline / **all generated critical messages**, including lost, expired, and abandoned ones. Critical-alert success rate is currently identical to DDR. Routine PDR and critical PDR are tracked separately. Class delivery balance is Jain's index of those two PDRs; it is **not competing-flow fairness**. A background `Agent/LossMonitor` records received CBR bytes, and background goodput divides those bits by the common interval from CBR start (`t=0.05 s`) to simulation finish. This is a coexistence indicator, not a full fairness test. Delay averages only delivered messages. Retransmission overhead = `(all send events − IDs sent at least once) / generated messages`. Logical goodput assumes 64 bytes per unique delivery; the actual NS2 packet header can differ.
+
+The seed is an NS2 RNG substream index. Data and ACK loss use separately seeded streams; the same topology, generation schedule, background rate, and substream index are applied to every compared mode. Different transport choices consume different numbers of random draws, so a shared seed does **not** impose an identical per-packet loss mask. Paired seed differences and deterministic percentile bootstrap intervals describe these 30 replications; they do not prove general superiority. See [research evaluation](RESEARCH_EVALUATION.md) for the checked-in sweeps and policy ablations.
+
+Run `python3 scripts/multiseed.py` to regenerate the three-mode comparison and `python3 scripts/ablation.py` for four AURA variants: `full`, `no_feasibility`, `fixed_window`, and `legacy`. `legacy` uses the former fixed-window, critical-front, no-feasibility sender. Both other ablations retain earliest-deadline ordering and the routine guard while removing only their named component. Each NS2 run produces `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`.

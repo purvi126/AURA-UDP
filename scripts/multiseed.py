@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import random
 import shutil
 import statistics
 import subprocess
@@ -19,7 +20,18 @@ SCENARIOS = {
     "high_rate": (0.15, 40, 120, 300, 60),
 }
 MODES = ("baseline", "sr", "aura")
-METRICS = ("pdr", "ddr", "avg_delay_ms", "retransmission_overhead")
+METRICS = ("pdr", "ddr", "critical_pdr", "routine_pdr", "avg_delay_ms",
+           "routine_avg_delay_ms", "retransmission_overhead",
+           "class_delivery_fairness", "sender_abandonments", "background_goodput_bps")
+
+
+def paired_bootstrap_interval(differences, key, resamples=5000):
+    """Deterministic 95% percentile interval for a paired mean difference."""
+    rng = random.Random(key)
+    count = len(differences)
+    means = sorted(sum(differences[rng.randrange(count)] for _ in range(count)) / count
+                   for _ in range(resamples))
+    return means[int(.025 * (resamples - 1))], means[int(.975 * (resamples - 1))]
 
 
 def write_csv(path, rows):
@@ -68,16 +80,21 @@ def main():
     write_csv(args.output / "summary.csv", summary)
     paired = []
     for scenario in SCENARIOS:
-        for metric in ("pdr", "ddr"):
+        for metric in ("pdr", "ddr", "routine_pdr", "retransmission_overhead",
+                       "class_delivery_fairness", "background_goodput_bps"):
             for comparison in ("baseline", "sr"):
                 differences = []
                 for seed in range(args.first_seed, args.first_seed + args.seeds):
                     values = {r["mode"]: r[metric] for r in runs
                               if r["scenario"] == scenario and r["seed"] == seed}
-                    differences.append(values["aura"] - values[comparison])
+                    if values["aura"] is not None and values[comparison] is not None:
+                        differences.append(values["aura"] - values[comparison])
+                lower, upper = paired_bootstrap_interval(
+                    differences, f"{scenario}:{metric}:{comparison}:{args.first_seed}:{args.seeds}") if differences else ("", "")
                 paired.append({"scenario": scenario, "metric": metric,
-                               "comparison": comparison, "seeds": args.seeds,
-                               "aura_minus_comparison_mean": statistics.mean(differences),
+                               "comparison": comparison, "seeds": len(differences),
+                               "aura_minus_comparison_mean": statistics.mean(differences) if differences else "",
+                               "ci95_low": lower, "ci95_high": upper,
                                "aura_better": sum(x > 0 for x in differences),
                                "tied": sum(x == 0 for x in differences),
                                "aura_worse": sum(x < 0 for x in differences)})
@@ -87,7 +104,9 @@ def main():
         "scenarios": {k: dict(zip(("loss", "delay_ms", "background_kbps",
                                    "deadline_ms", "interval_ms"), v))
                       for k, v in SCENARIOS.items()},
-        "interpretation": "Descriptive seed sweep; no statistical significance claim."
+        "interpretation": "Paired percentile bootstrap intervals describe these seeds; no broad superiority claim.",
+        "paired_bootstrap_resamples": 5000,
+        "class_delivery_fairness": "Jain index of critical and routine PDR; not competing-flow fairness."
     }, indent=2) + "\n", encoding="utf-8")
     print(f"Saved {len(runs)} runs across {len(SCENARIOS)} scenarios to {args.output}")
 

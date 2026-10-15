@@ -15,81 +15,81 @@
 <circle cx="51" cy="213" r="7" fill="#b45a32"/>
 <text x="66" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Baseline</text>
 <rect x="150" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="203" width="145.1" height="22" rx="5" fill="#b45a32"/>
-<text x="334" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">82.4%</text>
+<rect x="150" y="203" width="151.2" height="22" rx="5" fill="#b45a32"/>
+<text x="334" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">85.9%</text>
 <rect x="450" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="203" width="151.8" height="22" rx="5" fill="#b45a32"/>
-<text x="634" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">86.2%</text>
+<rect x="450" y="203" width="143.7" height="22" rx="5" fill="#b45a32"/>
+<text x="634" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">81.7%</text>
 <rect x="750" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
 <rect x="750" y="203" width="0.0" height="22" rx="5" fill="#b45a32"/>
 <text x="934" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.00</text>
 <circle cx="51" cy="255" r="7" fill="#68549b"/>
 <text x="66" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Selective Repeat</text>
 <rect x="150" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="245" width="175.8" height="22" rx="5" fill="#68549b"/>
-<text x="334" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">99.9%</text>
+<rect x="150" y="245" width="176.0" height="22" rx="5" fill="#68549b"/>
+<text x="334" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
 <rect x="450" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="245" width="152.5" height="22" rx="5" fill="#68549b"/>
-<text x="634" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">86.7%</text>
+<rect x="450" y="245" width="146.7" height="22" rx="5" fill="#68549b"/>
+<text x="634" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">83.3%</text>
 <rect x="750" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="245" width="35.0" height="22" rx="5" fill="#68549b"/>
-<text x="934" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.40</text>
+<rect x="750" y="245" width="36.9" height="22" rx="5" fill="#68549b"/>
+<text x="934" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.42</text>
 <circle cx="51" cy="297" r="7" fill="#087b78"/>
 <text x="66" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="15">AURA</text>
 <rect x="150" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
 <rect x="150" y="287" width="172.9" height="22" rx="5" fill="#087b78"/>
 <text x="334" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">98.2%</text>
 <rect x="450" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="287" width="161.3" height="22" rx="5" fill="#087b78"/>
-<text x="634" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">91.7%</text>
+<rect x="450" y="287" width="164.3" height="22" rx="5" fill="#087b78"/>
+<text x="634" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">93.3%</text>
 <rect x="750" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="287" width="34.7" height="22" rx="5" fill="#087b78"/>
-<text x="934" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.39</text>
+<rect x="750" y="287" width="32.3" height="22" rx="5" fill="#087b78"/>
+<text x="934" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.37</text>
 <rect x="28" y="352" width="964" height="185" rx="13" fill="#fffefa" stroke="#d7dedb"/>
 <text x="46" y="379" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">Tight Deadline</text>
 <circle cx="51" cy="418" r="7" fill="#b45a32"/>
 <text x="66" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Baseline</text>
 <rect x="150" y="408" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="408" width="116.2" height="22" rx="5" fill="#b45a32"/>
-<text x="334" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">66.0%</text>
+<rect x="150" y="408" width="118.7" height="22" rx="5" fill="#b45a32"/>
+<text x="334" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">67.4%</text>
 <rect x="450" y="408" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="408" width="28.6" height="22" rx="5" fill="#b45a32"/>
-<text x="634" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">16.2%</text>
+<rect x="450" y="408" width="22.7" height="22" rx="5" fill="#b45a32"/>
+<text x="634" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.9%</text>
 <rect x="750" y="408" width="176" height="22" rx="5" fill="#e9eeeb"/>
 <rect x="750" y="408" width="0.0" height="22" rx="5" fill="#b45a32"/>
 <text x="934" y="424" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.00</text>
 <circle cx="51" cy="460" r="7" fill="#68549b"/>
 <text x="66" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Selective Repeat</text>
 <rect x="150" y="450" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="450" width="174.2" height="22" rx="5" fill="#68549b"/>
-<text x="334" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">99.0%</text>
+<rect x="150" y="450" width="174.0" height="22" rx="5" fill="#68549b"/>
+<text x="334" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">98.9%</text>
 <rect x="450" y="450" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="450" width="21.3" height="22" rx="5" fill="#68549b"/>
-<text x="634" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.1%</text>
+<rect x="450" y="450" width="17.6" height="22" rx="5" fill="#68549b"/>
+<text x="634" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">10.0%</text>
 <rect x="750" y="450" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="450" width="139.4" height="22" rx="5" fill="#68549b"/>
+<rect x="750" y="450" width="138.9" height="22" rx="5" fill="#68549b"/>
 <text x="934" y="466" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">1.58</text>
 <circle cx="51" cy="502" r="7" fill="#087b78"/>
 <text x="66" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="15">AURA</text>
 <rect x="150" y="492" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="492" width="133.6" height="22" rx="5" fill="#087b78"/>
-<text x="334" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">75.9%</text>
+<rect x="150" y="492" width="138.1" height="22" rx="5" fill="#087b78"/>
+<text x="334" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">78.4%</text>
 <rect x="450" y="492" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="492" width="22.7" height="22" rx="5" fill="#087b78"/>
-<text x="634" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">12.9%</text>
+<rect x="450" y="492" width="18.3" height="22" rx="5" fill="#087b78"/>
+<text x="634" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">10.4%</text>
 <rect x="750" y="492" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="492" width="57.1" height="22" rx="5" fill="#087b78"/>
-<text x="934" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.65</text>
+<rect x="750" y="492" width="58.0" height="22" rx="5" fill="#087b78"/>
+<text x="934" y="508" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.66</text>
 <rect x="28" y="557" width="964" height="185" rx="13" fill="#fffefa" stroke="#d7dedb"/>
 <text x="46" y="584" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">High Rate</text>
 <circle cx="51" cy="623" r="7" fill="#b45a32"/>
 <text x="66" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="15">Baseline</text>
 <rect x="150" y="613" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="613" width="147.8" height="22" rx="5" fill="#b45a32"/>
-<text x="334" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">84.0%</text>
+<rect x="150" y="613" width="151.2" height="22" rx="5" fill="#b45a32"/>
+<text x="334" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">85.9%</text>
 <rect x="450" y="613" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="613" width="155.5" height="22" rx="5" fill="#b45a32"/>
-<text x="634" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">88.3%</text>
+<rect x="450" y="613" width="151.8" height="22" rx="5" fill="#b45a32"/>
+<text x="634" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">86.2%</text>
 <rect x="750" y="613" width="176" height="22" rx="5" fill="#e9eeeb"/>
 <rect x="750" y="613" width="0.0" height="22" rx="5" fill="#b45a32"/>
 <text x="934" y="629" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.00</text>
@@ -99,21 +99,21 @@
 <rect x="150" y="655" width="176.0" height="22" rx="5" fill="#68549b"/>
 <text x="334" y="671" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
 <rect x="450" y="655" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="655" width="115.9" height="22" rx="5" fill="#68549b"/>
-<text x="634" y="671" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">65.8%</text>
+<rect x="450" y="655" width="129.1" height="22" rx="5" fill="#68549b"/>
+<text x="634" y="671" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">73.3%</text>
 <rect x="750" y="655" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="655" width="39.5" height="22" rx="5" fill="#68549b"/>
-<text x="934" y="671" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.45</text>
+<rect x="750" y="655" width="34.2" height="22" rx="5" fill="#68549b"/>
+<text x="934" y="671" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.39</text>
 <circle cx="51" cy="707" r="7" fill="#087b78"/>
 <text x="66" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="15">AURA</text>
 <rect x="150" y="697" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="150" y="697" width="173.3" height="22" rx="5" fill="#087b78"/>
-<text x="334" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">98.4%</text>
+<rect x="150" y="697" width="171.5" height="22" rx="5" fill="#087b78"/>
+<text x="334" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">97.4%</text>
 <rect x="450" y="697" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="697" width="158.4" height="22" rx="5" fill="#087b78"/>
-<text x="634" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">90.0%</text>
+<rect x="450" y="697" width="156.9" height="22" rx="5" fill="#087b78"/>
+<text x="634" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">89.2%</text>
 <rect x="750" y="697" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="697" width="34.5" height="22" rx="5" fill="#087b78"/>
-<text x="934" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.39</text>
+<rect x="750" y="697" width="27.6" height="22" rx="5" fill="#087b78"/>
+<text x="934" y="713" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.31</text>
 <text x="34" y="804" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Data: executed NS2 runs · the chart does not establish general superiority</text>
 </svg>

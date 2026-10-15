@@ -24,5 +24,7 @@
       "interval_ms": 60
     }
   },
-  "interpretation": "Descriptive seed sweep; no statistical significance claim."
+  "interpretation": "Paired percentile bootstrap intervals describe these seeds; no broad superiority claim.",
+  "paired_bootstrap_resamples": 5000,
+  "class_delivery_fairness": "Jain index of critical and routine PDR; not competing-flow fairness."
 }

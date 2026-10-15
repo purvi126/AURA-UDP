@@ -65,6 +65,38 @@ class MetricsTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "out of order|before generation"):
                 calculate(path)
 
+    def test_abandonment_stays_in_deadline_denominator_and_measures_class_fairness(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "events.csv"
+            self.write_events(path, [
+                (.1, "generate", 1, "critical", 0, .3),
+                (.1, "generate", 2, "critical", 0, .3),
+                (.1, "generate", 3, "routine", 0, 100),
+                (.2, "deliver", 1, "critical", 1, .3),
+                (.21, "abandon", 2, "critical", 1, .3),
+                (.25, "deliver", 3, "routine", 1, 100),
+                (1, "finish", 0, "", 0, ""),
+            ])
+            result = calculate(path)
+            self.assertEqual(result["ddr"], .5)
+            self.assertEqual(result["critical_pdr"], .5)
+            self.assertEqual(result["routine_pdr"], 1)
+            self.assertEqual(result["sender_abandonments"], 1)
+            self.assertAlmostEqual(result["class_delivery_fairness"], .9)
+
+    def test_background_goodput_uses_received_bytes(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "events.csv"
+            self.write_events(path, [
+                (.1, "generate", 1, "routine", 0, 100),
+                (1, "finish", 0, "", 0, ""),
+            ])
+            (Path(d) / "background.csv").write_text(
+                "time,received_packets,received_bytes\n1,2,400\n", encoding="utf-8")
+            result = calculate(path)
+            self.assertEqual(result["background_received_packets"], 2)
+            self.assertAlmostEqual(result["background_goodput_bps"], 3200 / .95)
+
 
 if __name__ == "__main__":
     unittest.main()

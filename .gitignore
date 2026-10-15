@@ -8,4 +8,8 @@ __pycache__/
 *.tr
 *.nam
 experiments/results/*/*/events.csv
+experiments/results/*/*/background.csv
+experiments/results/*/*/control.csv
 !experiments/results/sample/*/events.csv
+!experiments/results/sample/*/background.csv
+!experiments/results/sample/*/control.csv

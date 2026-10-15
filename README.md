@@ -16,7 +16,9 @@ The same campus question is explored in two independent tools. **NS2 produces pe
 
 ```mermaid
 flowchart TB
-  N1["Simulated source<br/>30 messages; baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>delivery and late-alert checks"] --> N4["Event logs"] --> N5["Python metrics<br/>chart and dashboard"]
+  N1["Simulated source<br/>30 messages; baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>delivery and late-alert checks"] --> N4["Event and background-flow logs"] --> N5["Python metrics<br/>chart and dashboard"]
+  N3 -- "ACK for SR / AURA" --> N1
+  N1 -- "Deadline and retry decision" --> N1
   B["Competing traffic"] --> N2
   classDef simulation fill:#e7f4f0,stroke:#087b78,color:#163b43
   class N1,N2,N3,N4,N5,B simulation
@@ -39,12 +41,12 @@ The sensor-to-gateway view and PC0-to-server HTTP route are **two separate check
 | Where to look | What is implemented there |
 |---|---|
 | [ns2/run.tcl](ns2/run.tcl) | NS2 nodes, links, loss, traffic, baseline/SR/AURA sender behavior, ACKs, deadlines, and event logs. |
-| [scripts/multiseed.py](scripts/multiseed.py) and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs and turn their logs into measured results. |
+| [scripts/multiseed.py](scripts/multiseed.py), [scripts/ablation.py](scripts/ablation.py), and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs, isolate policy choices, and turn logs into measured results. |
 | [python/dashboard/index.html](python/dashboard/index.html) | Explore the saved NS2 results and message events; it does not run a simulation. |
 | [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt) | Editable Cisco Packet Tracer campus with routed PCs, Server0, Home Gateway, Temperature Monitor, and Smoke Detector. |
 | [server-index.html](packet_tracer/documentation/server-index.html) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md) | Source of Server0's HTTP page, address plan, and steps to inspect the Packet Tracer paths. |
 
-Numbered datagrams and ACKs are carried by NS2 `Agent/Message` instances. The sender controls a four-message window, retries individually, and suppresses duplicate delivery. AURA adds critical-first admission, absolute deadlines, RTT-based retry timing, Karn's rule, and timeout backoff. See [protocol details](docs/PROTOCOL.md). The novelty here is the *combination and evaluation* of established mechanisms in this lab scenario; no claim of a new transport standard is made.
+Numbered datagrams and ACKs are carried by NS2 `Agent/Message` instances. The sender retries individually; the receiver suppresses duplicate delivery. AURA adds deadline-ordered alert admission, a routine-traffic guard, an explicit estimate of whether a retry can arrive in time, RTT-based timing, and a bounded 4–6-message congestion window. See the [policy specification](docs/PROTOCOL.md). The research question is whether the **deadline feasibility decision** improves useful delivery enough to justify its cost; the [ablation](docs/RESEARCH_EVALUATION.md) reports a mixed result, not a claim of a new transport standard.
 
 ## Requirements and quick start
 
@@ -58,6 +60,7 @@ From `/mnt/d/projects/AURA-UDP`:
 python3 -m unittest discover -s tests -v
 python3 scripts/experiments.py --output experiments/results/sample
 python3 scripts/multiseed.py
+python3 scripts/ablation.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
 ```
 
@@ -76,7 +79,7 @@ ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-demo
 python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
-The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms]`. The output contains `events.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Modify the arguments to vary loss, delay, congestion, message rate and deadlines. Each mode uses the same configured topology, traffic schedule and initial seed.
+The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy]`. Policy variants apply only to AURA; `full` is the default. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Modify the arguments to vary loss, delay, congestion, message rate and deadlines. Each mode uses the same configured topology and traffic schedule, with paired seed indices for the loss streams.
 
 ## Measured sample
 
@@ -85,7 +88,7 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 ## Demonstration
 
 1. Run the tests and experiments above. Compare PDR, DDR, delay, retransmission overhead and goodput in the CSV and SVG.
-2. Inspect `events.csv` for `generate`, `send`, `timeout`, `receive`, `duplicate`, `deliver`, `late`, `ack`, and `expire` transitions.
+2. Inspect `events.csv` for `generate`, `send`, `timeout`, `receive`, `duplicate`, `deliver`, `late`, `ack`, `expire`, and `abandon` transitions. `control.csv` shows retry timer and window decisions; `background.csv` records the competing flow's received packets.
 3. Optionally open `ns2.nam` with NAM if installed; no result calculation depends on NAM.
 4. Open the editable [Packet Tracer campus topology](packet_tracer/topology/AURA-UDP-campus.pkt). From sensor-side PC0, browse to `http://10.10.30.10` to verify HTTP across both routers. From Tablet PC0, browse to `http://192.168.25.1`, sign in to the lab gateway, and inspect the registered temperature and smoke devices. The [build guide](packet_tracer/documentation/BUILD_GUIDE.md) has the full address plan.
 
@@ -103,17 +106,17 @@ The [30-seed sweep](experiments/results/multiseed/summary.csv) covers moderate l
 
 | Condition | Baseline DDR | Fixed SR DDR | AURA DDR |
 |---|---:|---:|---:|
-| Moderate loss | 86.3% | 86.7% | 91.7% |
-| Tight deadline | 16.3% | 12.1% | 12.9% |
-| High message rate | 88.3% | 65.8% | 90.0% |
+| Moderate loss | 81.7% | 83.3% | 93.3% |
+| Tight deadline | 12.9% | 10.0% | 10.4% |
+| High message rate | 86.3% | 73.3% | 89.2% |
 
-AURA's PDR remained below fixed SR in all three conditions. The tight-deadline case shows a limit: all modes delivered few critical alerts on time, and baseline exceeded both reliable modes. See the [per-run results](experiments/results/multiseed/runs.csv), [paired differences](experiments/results/multiseed/paired.csv), and [settings](experiments/results/multiseed/config.json). These descriptive comparisons do not establish general superiority. Throughput and logical goodput use the same configured observation window for every mode within a condition.
+AURA's PDR remained below fixed SR in all three conditions. The tight-deadline case shows a limit: all modes delivered few critical alerts on time, and baseline exceeded both reliable modes. The new feasibility decision reduced retry overhead under high message rate but did **not** improve measured DDR over the version without it. See the [research evaluation and ablation](docs/RESEARCH_EVALUATION.md), [per-run results](experiments/results/multiseed/runs.csv), [paired differences](experiments/results/multiseed/paired.csv), and [settings](experiments/results/multiseed/config.json). These descriptive comparisons do not establish general superiority. Throughput and logical goodput use the same configured observation window for every mode within a condition.
 
 The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. See the [validation record](docs/VALIDATION.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 
 ## Limits
 
-No adaptive window sizing, router queue priority, custom C++ UDP header, or statistical significance test is implemented. The logical 64-byte goodput assumption is documented. See the [engineering review](docs/ENGINEERING_REVIEW.md) for corrected issues, security scope, and remaining limits, and [progress](docs/AI_SETUP_PROGRESS.md) for the implementation record.
+The sender has a small bounded adaptive window; router queue priority, a custom C++ UDP header, and an Internet-grade congestion controller are not implemented. The 30-seed bootstrap intervals describe this workload and are not a confirmatory significance test. The logical 64-byte goodput assumption is documented. See the [engineering review](docs/ENGINEERING_REVIEW.md) for corrected issues, security scope, and remaining limits, and [progress](docs/AI_SETUP_PROGRESS.md) for the implementation record.
 
 MIT licensed; see [LICENSE](LICENSE).
 

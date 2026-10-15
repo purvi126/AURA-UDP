@@ -15,3 +15,5 @@ jobs:
       - run: node scripts/check_dashboard.mjs
       - name: Smoke-test the seed sweep
         run: python scripts/multiseed.py --seeds 3 --output /tmp/aura-ci-sweep
+      - name: Smoke-test deadline policy ablations
+        run: python scripts/ablation.py --seeds 3 --output /tmp/aura-ci-ablation

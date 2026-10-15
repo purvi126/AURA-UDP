@@ -10,13 +10,51 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @unittest.skipUnless(shutil.which("ns"), "NS2 is not installed")
 class NS2IntegrationTest(unittest.TestCase):
-    def run_mode(self, mode, loss, delay, background, deadline, interval=120):
+    def run_mode(self, mode, loss, delay, background, deadline, interval=120,
+                 seed=11, policy="full"):
         with tempfile.TemporaryDirectory() as d:
             subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), mode, str(loss),
-                            str(delay), str(background), str(deadline), "11", d,
-                            str(interval)], check=True, capture_output=True, text=True)
+                            str(delay), str(background), str(deadline), str(seed), d,
+                            str(interval), policy], check=True, capture_output=True, text=True)
             with (Path(d) / "events.csv").open(newline="") as f:
                 return list(csv.DictReader(f))
+
+    def test_feasibility_abandons_unuseful_retry(self):
+        args = ("aura", .15, 40, 120, 300)
+        full = self.run_mode(*args, interval=60, seed=1)
+        without = self.run_mode(*args, interval=60, seed=1,
+                                policy="no_feasibility")
+        abandoned = {r["id"] for r in full if r["event"] == "abandon"}
+        self.assertTrue(abandoned)
+        self.assertFalse(any(r["event"] == "abandon" for r in without))
+        cutoff = {r["id"]: float(r["time"]) for r in full
+                  if r["event"] == "abandon"}
+        for row in full:
+            if row["event"] == "send" and row["id"] in cutoff:
+                self.assertLess(float(row["time"]), cutoff[row["id"]])
+
+    def test_window_growth_is_bounded(self):
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "aura", "0", "40",
+                            "80", "300", "1", d, "60"], check=True,
+                           capture_output=True, text=True)
+            with (Path(d) / "control.csv").open(newline="") as f:
+                rows = list(csv.DictReader(f))
+        self.assertTrue(any(r["event"] == "increase" for r in rows))
+        self.assertTrue(all(4 <= int(r["window"]) <= 6 for r in rows))
+
+    def test_timeout_reduces_grown_window(self):
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "aura", ".15", "40",
+                            "120", "300", "1", d, "60"], check=True,
+                           capture_output=True, text=True)
+            with (Path(d) / "control.csv").open(newline="") as f:
+                rows = list(csv.DictReader(f))
+        grown = next(i for i, row in enumerate(rows) if row["event"] == "increase")
+        self.assertEqual(int(rows[grown]["window"]), 5)
+        later_timeout = next(row for row in rows[grown + 1:]
+                             if row["event"] == "timeout")
+        self.assertEqual(int(later_timeout["window"]), 4)
 
     def test_no_loss_and_ack(self):
         rows = self.run_mode("sr", 0, 10, 0, 500)

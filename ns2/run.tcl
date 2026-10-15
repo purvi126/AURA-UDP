@@ -1,9 +1,12 @@
 # AURA-UDP: OTcl transport running over real NS2 Message agents and links.
-# ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR ?INTERVAL_MS?
-if {$argc != 7 && $argc != 8} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms?"; exit 2 }
-lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms
+# ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR ?INTERVAL_MS? ?POLICY?
+if {$argc < 7 || $argc > 9} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy?"; exit 2 }
+lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy
 if {$interval_ms eq ""} { set interval_ms 120 }
+if {$policy eq ""} { set policy full }
 if {$mode ni {baseline sr aura}} { error "invalid mode $mode" }
+if {$policy ni {full no_feasibility fixed_window legacy}} { error "invalid policy $policy" }
+if {$mode ne "aura" && $policy ne "full"} { error "policy variants require aura mode" }
 foreach {name value} [list loss $loss delay_ms $delay_ms background_kbps $bg_kbps deadline_ms $deadline_ms interval_ms $interval_ms] {
     if {![regexp {^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$} $value]} { error "$name must be a non-negative finite number" }
 }
@@ -12,12 +15,24 @@ if {$delay_ms <= 0 || $deadline_ms <= 0 || $interval_ms <= 0} { error "delay, de
 if {![string is integer -strict $seed] || $seed < 0} { error "seed must be a non-negative integer" }
 if {$outdir eq ""} { error "output directory must not be empty" }
 file mkdir $outdir
-ns-random $seed
+# The seed is a replication/substream index. Keep data and ACK loss on
+# separate RNG streams so their draws do not consume each other's sequence.
+ns-random 1
+set data_rng [new RNG]
+set ack_rng [new RNG]
+$data_rng seed 2117
+$ack_rng seed 9871
+for {set replication 0} {$replication < $seed} {incr replication} {
+    $data_rng next-substream
+    $ack_rng next-substream
+}
 set ns [new Simulator]
 set trace [open "$outdir/ns2.tr" w]
 set nam [open "$outdir/ns2.nam" w]
 set events [open "$outdir/events.csv" w]
 puts $events "time,event,id,class,attempt,deadline"
+set control [open "$outdir/control.csv" w]
+puts $control "time,event,window,rto,id"
 $ns trace-all $trace
 $ns namtrace-all $nam
 set src [$ns node]; set router [$ns node]; set dst [$ns node]; set bgsrc [$ns node]
@@ -29,10 +44,16 @@ $ns queue-limit $router $dst 12
 set data_loss [new ErrorModel]
 $data_loss unit pkt
 $data_loss set rate_ $loss
+set data_uniform [new RandomVariable/Uniform]
+$data_uniform use-rng $data_rng
+$data_loss ranvar $data_uniform
 $ns lossmodel $data_loss $router $dst
 set ack_loss [new ErrorModel]
 $ack_loss unit pkt
 $ack_loss set rate_ $loss
+set ack_uniform [new RandomVariable/Uniform]
+$ack_uniform use-rng $ack_rng
+$ack_loss ranvar $ack_uniform
 $ns lossmodel $ack_loss $dst $router
 Class Agent/AuraEndpoint -superclass Agent/Message
 Agent/AuraEndpoint instproc recv {payload} {
@@ -63,7 +84,7 @@ $ns attach-agent $dst $receiver
 $ns connect $sender $receiver
 $ns connect $receiver $sender
 set bga [new Agent/UDP]
-set bgs [new Agent/Null]
+set bgs [new Agent/LossMonitor]
 $ns attach-agent $bgsrc $bga
 $ns attach-agent $dst $bgs
 $ns connect $bga $bgs
@@ -72,6 +93,7 @@ $cbr set packetSize_ 200
 if {$bg_kbps > 0} { $cbr set rate_ "${bg_kbps}Kb" } else { $cbr set rate_ "1Kb" }
 $cbr attach-agent $bga
 set window 4
+set window_credit 0
 set rto 0.3
 set srtt 0.0
 set rttvar 0.0
@@ -85,15 +107,33 @@ array set deadline {}
 array set received {}
 array set delivered {}
 set pending {}
+set critical_streak 0
+puts $control "0,init,$window,$rto,0"
+proc log_control {event id} {
+    global ns control window rto
+    puts $control "[$ns now],$event,$window,$rto,$id"
+}
+proc expected_forward_time {} {
+    global delay_ms srtt
+    # Symmetric lab links: half the sampled RTT estimates a forward trip.
+    # Propagation delay is a floor; the first send is never discarded by this estimate.
+    if {$srtt == 0.0} { return [expr {$delay_ms/1000.0}] }
+    return [expr {max($delay_ms/1000.0, $srtt/2.0)}]
+}
 proc log_event {ev id} {
     global ns events class attempts deadline
     puts $events "[$ns now],$ev,$id,$class($id),$attempts($id),$deadline($id)"
 }
 proc transmit {id} {
-    global ns sender mode class deadline attempts senttime state rto
+    global ns sender mode policy class deadline attempts senttime state rto
     if {$state($id) ne "pending"} { return 0 }
     if {$mode eq "aura" && $class($id) eq "critical" && [$ns now] >= $deadline($id)} {
         set state($id) expired; log_event expire $id; return 0
+    }
+    if {$mode eq "aura" && $class($id) eq "critical" && $attempts($id) > 0
+        && $policy ni {no_feasibility legacy}
+        && [$ns now] + [expected_forward_time] > $deadline($id)} {
+        set state($id) abandoned; log_event abandon $id; log_control abandon $id; return 0
     }
     incr attempts($id)
     set senttime($id) [$ns now]
@@ -110,18 +150,25 @@ proc expire_alert {id} {
     pump
 }
 proc timeout {id attempt} {
-    global state attempts mode deadline ns rto
+    global state attempts mode policy deadline ns rto window window_credit
     if {$state($id) ne "pending" || $attempts($id) != $attempt} { return }
     if {$mode eq "aura" && [$ns now] >= $deadline($id)} {
         set state($id) expired; log_event expire $id; pump; return
     }
     if {$attempts($id) >= 5} { set state($id) failed; log_event fail $id; pump; return }
     log_event timeout $id
-    if {$mode eq "aura"} { set rto [expr {min(1.0, $rto * 1.5)}] }
+    if {$mode eq "aura"} {
+        set rto [expr {min(1.0, $rto * 1.5)}]
+        if {$policy ni {fixed_window legacy}} {
+            set window [expr {max(4, int($window/2))}]
+            set window_credit 0
+        }
+        log_control timeout $id
+    }
     if {![transmit $id]} { pump }
 }
 proc on_ack {id} {
-    global ns state mode attempts senttime srtt rttvar rto
+    global ns state mode policy attempts senttime srtt rttvar rto window window_credit
     if {![info exists state($id)] || $state($id) ne "pending"} { return }
     set state($id) acked
     log_event ack $id
@@ -134,23 +181,44 @@ proc on_ack {id} {
         }
         set rto [expr {max(0.08, min(1.0, $srtt + 4*$rttvar))}]
     }
+    if {$mode eq "aura" && $policy ni {fixed_window legacy} && $window < 6} {
+        incr window_credit
+        if {$window_credit >= $window} {
+            incr window
+            set window_credit 0
+            log_control increase $id
+        }
+    }
     pump
 }
 proc pump {} {
-    global mode pending state window
+    global mode policy pending state class window critical_streak
     if {$mode eq "baseline"} { return }
     set active 0
     foreach id [array names state] { if {$state($id) eq "pending"} { incr active } }
     while {$active < $window && [llength $pending] > 0} {
-        set id [lindex $pending 0]
-        set pending [lrange $pending 1 end]
+        set index 0
+        if {$mode eq "aura" && $policy ne "legacy" && $critical_streak >= 3} {
+            for {set i 0} {$i < [llength $pending]} {incr i} {
+                set candidate [lindex $pending $i]
+                if {$state($candidate) eq "queued" && $class($candidate) eq "routine"} {
+                    set index $i
+                    break
+                }
+            }
+        }
+        set id [lindex $pending $index]
+        set pending [lreplace $pending $index $index]
         if {$state($id) ne "queued"} { continue }
         set state($id) pending
-        if {[transmit $id]} { incr active }
+        if {[transmit $id]} {
+            incr active
+            if {$class($id) eq "critical"} { incr critical_streak } else { set critical_streak 0 }
+        }
     }
 }
 proc generate {cls} {
-    global ns nextid deadline_ms state attempts class deadline pending mode
+    global ns nextid deadline_ms state attempts class deadline pending mode policy
     set id [incr nextid]
     set class($id) $cls
     set attempts($id) 0
@@ -159,13 +227,28 @@ proc generate {cls} {
     log_event generate $id
     if {$mode eq "aura" && $cls eq "critical"} { $ns at $deadline($id) "expire_alert $id" }
     if {$mode eq "baseline"} { set state($id) pending; transmit $id; return }
-    if {$mode eq "aura" && $cls eq "critical"} { set pending [linsert $pending 0 $id] } else { lappend pending $id }
+    if {$mode eq "aura" && $cls eq "critical"} {
+        if {$policy eq "legacy"} {
+            set pending [linsert $pending 0 $id]
+        } else {
+            set index 0
+            foreach queued $pending {
+                if {$class($queued) ne "critical" || $deadline($queued) > $deadline($id)} { break }
+                incr index
+            }
+            set pending [linsert $pending $index $id]
+        }
+    } else { lappend pending $id }
     pump
 }
 proc finish {} {
-    global ns trace nam events
+    global ns trace nam events control bgs outdir
     puts $events "[$ns now],finish,0,,0,"
-    close $trace; close $nam; close $events
+    set background [open "$outdir/background.csv" w]
+    puts $background "time,received_packets,received_bytes"
+    puts $background "[$ns now],[$bgs set npkts_],[$bgs set bytes_]"
+    close $background
+    close $trace; close $nam; close $events; close $control
     exit 0
 }
 if {$bg_kbps > 0} { $ns at 0.05 "$cbr start" }

@@ -9,7 +9,7 @@
 <text x="450" y="115" fill="#20343a" font-family="Arial,sans-serif" font-size="16" font-weight="700">On-time critical (DDR)</text>
 <text x="450" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–100%</text>
 <text x="750" y="115" fill="#20343a" font-family="Arial,sans-serif" font-size="16" font-weight="700">Extra sends / message</text>
-<text x="750" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–1</text>
+<text x="750" y="137" fill="#607176" font-family="Arial,sans-serif" font-size="13">Scale: 0–0.5</text>
 <rect x="28" y="147" width="964" height="185" rx="13" fill="#fffefa" stroke="#d7dedb"/>
 <text x="46" y="174" fill="#163b43" font-family="Arial,sans-serif" font-size="18" font-weight="700">Measured Sample</text>
 <circle cx="51" cy="213" r="7" fill="#b45a32"/>
@@ -18,8 +18,8 @@
 <rect x="150" y="203" width="164.3" height="22" rx="5" fill="#b45a32"/>
 <text x="334" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">93.3%</text>
 <rect x="450" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="203" width="176.0" height="22" rx="5" fill="#b45a32"/>
-<text x="634" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
+<rect x="450" y="203" width="154.0" height="22" rx="5" fill="#b45a32"/>
+<text x="634" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">87.5%</text>
 <rect x="750" y="203" width="176" height="22" rx="5" fill="#e9eeeb"/>
 <rect x="750" y="203" width="0.0" height="22" rx="5" fill="#b45a32"/>
 <text x="934" y="219" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.00</text>
@@ -29,11 +29,11 @@
 <rect x="150" y="245" width="176.0" height="22" rx="5" fill="#68549b"/>
 <text x="334" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
 <rect x="450" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="450" y="245" width="176.0" height="22" rx="5" fill="#68549b"/>
-<text x="634" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
+<rect x="450" y="245" width="132.0" height="22" rx="5" fill="#68549b"/>
+<text x="634" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">75.0%</text>
 <rect x="750" y="245" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="245" width="82.1" height="22" rx="5" fill="#68549b"/>
-<text x="934" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.47</text>
+<rect x="750" y="245" width="152.5" height="22" rx="5" fill="#68549b"/>
+<text x="934" y="261" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.43</text>
 <circle cx="51" cy="297" r="7" fill="#087b78"/>
 <text x="66" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="15">AURA</text>
 <rect x="150" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
@@ -43,7 +43,7 @@
 <rect x="450" y="287" width="176.0" height="22" rx="5" fill="#087b78"/>
 <text x="634" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">100.0%</text>
 <rect x="750" y="287" width="176" height="22" rx="5" fill="#e9eeeb"/>
-<rect x="750" y="287" width="123.2" height="22" rx="5" fill="#087b78"/>
-<text x="934" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.70</text>
+<rect x="750" y="287" width="93.9" height="22" rx="5" fill="#087b78"/>
+<text x="934" y="303" fill="#20343a" font-family="Arial,sans-serif" font-size="14" font-weight="700">0.27</text>
 <text x="34" y="394" fill="#52666b" font-family="Arial,sans-serif" font-size="14">Data: executed NS2 runs · the chart does not establish general superiority</text>
 </svg>

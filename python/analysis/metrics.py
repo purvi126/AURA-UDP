@@ -18,10 +18,11 @@ def calculate(path):
     delivered = {}
     sends = 0
     sent_ids = set()
+    abandoned_ids = set()
     finish_time = None
     times = []
     allowed = {"generate", "send", "receive", "deliver", "ack", "timeout",
-               "duplicate", "expire", "late", "fail", "finish"}
+               "duplicate", "expire", "abandon", "late", "fail", "finish"}
     for row in rows:
         event = row["event"]
         if event not in allowed:
@@ -58,10 +59,13 @@ def calculate(path):
             sent_ids.add(mid)
         elif event == "deliver" and mid not in delivered:
             delivered[mid] = row
+        elif event == "abandon":
+            abandoned_ids.add(mid)
     if not generated:
         raise ValueError(f"{path}: no generated messages")
     n = len(generated)
     critical = [mid for mid, row in generated.items() if row["class"] == "critical"]
+    routine = [mid for mid, row in generated.items() if row["class"] == "routine"]
     timely = sum(mid in delivered and float(delivered[mid]["time"]) <= float(generated[mid]["deadline"]) for mid in critical)
     delays = [float(row["time"]) - float(generated[mid]["time"]) for mid, row in delivered.items()]
     if any(delay < 0 for delay in delays):
@@ -71,6 +75,27 @@ def calculate(path):
     if end <= start:
         raise ValueError(f"{path}: observation interval must end after generation")
     span = end - start
+    background_path = Path(path).with_name("background.csv")
+    background_packets = None
+    background_goodput = None
+    if background_path.exists():
+        with background_path.open(newline="", encoding="utf-8") as f:
+            background_rows = list(csv.DictReader(f))
+        if len(background_rows) != 1:
+            raise ValueError(f"{background_path}: expected one background summary row")
+        background_packets = int(background_rows[0]["received_packets"])
+        background_bytes = int(background_rows[0]["received_bytes"])
+        if background_packets < 0 or background_bytes < 0:
+            raise ValueError(f"{background_path}: negative background counter")
+        # Background CBR starts at t=0.05; use the shared simulation finish.
+        background_goodput = 8 * background_bytes / (end - .05)
+    critical_pdr = sum(mid in delivered for mid in critical) / len(critical) if critical else 0
+    routine_pdr = sum(mid in delivered for mid in routine) / len(routine) if routine else 0
+    routine_delays = [float(delivered[mid]["time"]) - float(generated[mid]["time"])
+                      for mid in routine if mid in delivered]
+    fairness_denom = 2 * (critical_pdr**2 + routine_pdr**2)
+    class_fairness = ((critical_pdr + routine_pdr)**2 / fairness_denom
+                      if critical and routine and fairness_denom else None)
     # Agent/Message payload is small; goodput uses a documented 64-byte logical message.
     return {
         "generated": n,
@@ -78,6 +103,14 @@ def calculate(path):
         "pdr": len(delivered) / n if n else 0,
         "ddr": timely / len(critical) if critical else 0,
         "critical_alert_success_rate": timely / len(critical) if critical else 0,
+        "critical_pdr": critical_pdr,
+        "routine_pdr": routine_pdr,
+        "routine_avg_delay_ms": (1000 * sum(routine_delays) / len(routine_delays)
+                                 if routine_delays else None),
+        "class_delivery_fairness": class_fairness,
+        "sender_abandonments": sum(mid in critical for mid in abandoned_ids),
+        "background_received_packets": background_packets,
+        "background_goodput_bps": background_goodput,
         "avg_delay_ms": 1000 * sum(delays) / len(delays) if delays else None,
         "throughput_messages_per_s": len(delivered) / span,
         "goodput_bps_logical_64B": 8 * 64 * len(delivered) / span,
