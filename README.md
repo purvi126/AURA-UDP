@@ -2,7 +2,7 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
-[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), including the editable Packet Tracer topology, 1,260 measured NS2 runs, and readable vector evidence. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain rollback checkpoints.
+[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv) and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
 **Computer Networks Lab Review 2:** [seven-page PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) · [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx). Prepared by Purvi Valmeti and M Harshita Sri, it explains the implementation, NS2 results, Packet Tracer captures, and remaining work. The approximately 70–75% milestone is a project planning estimate.
 
@@ -18,13 +18,13 @@ The same campus question is explored in two independent tools. **NS2 produces pe
 
 ```mermaid
 flowchart TB
-  N1["Sensor workload<br/>30 generated messages"] --> P["Sender policy<br/>baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a short queue"] --> N3["Monitoring receiver<br/>unique delivery and deadline checks"]
+  N1["Sensor workload<br/>30 or 120 generated messages"] --> P["Sender policy<br/>baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a configurable queue"] --> N3["Monitoring receiver<br/>unique delivery and deadline checks"]
   N3 -- "ACK for SR and AURA" --> P
   P --> L["Sender decisions<br/>send, retry, abandon, window"]
   N3 --> E["Receiver events<br/>deliver or late"]
   L --> N5["Python metrics<br/>vector chart and dashboard"]
   E --> N5
-  B["Competing traffic"] --> N2
+  B["One or two competing CBR flows"] --> N2
   classDef simulation fill:#e7f4f0,stroke:#087b78,color:#163b43
   class N1,P,N2,N3,L,E,N5,B simulation
 ```
@@ -46,7 +46,7 @@ The sensor-to-gateway view and PC0-to-server HTTP route are **two separate check
 | Where to look | What is implemented there |
 |---|---|
 | [ns2/run.tcl](ns2/run.tcl) | NS2 nodes, links, loss, traffic, baseline/SR/AURA sender behavior, ACKs, deadlines, and event logs. |
-| [scripts/multiseed.py](scripts/multiseed.py), [scripts/ablation.py](scripts/ablation.py), and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs, isolate policy choices, and turn logs into measured results. |
+| [scripts/multiseed.py](scripts/multiseed.py), [scripts/ablation.py](scripts/ablation.py), [scripts/robustness.py](scripts/robustness.py), and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs, isolate policy choices, test longer crowded workloads, and turn logs into measured results. |
 | [python/dashboard/index.html](python/dashboard/index.html) | Explore the saved NS2 results and message events; it does not run a simulation. |
 | [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt) | Editable Cisco Packet Tracer campus with routed PCs, Server0, Home Gateway, Temperature Monitor, and Smoke Detector. |
 | [server-index.html](packet_tracer/documentation/server-index.html) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md) | Source of Server0's HTTP page, address plan, and steps to inspect the Packet Tracer paths. |
@@ -66,7 +66,9 @@ python3 -m unittest discover -s tests -v
 python3 scripts/experiments.py --output experiments/results/sample
 python3 scripts/multiseed.py
 python3 scripts/ablation.py
+python3 scripts/robustness.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
+python3 scripts/plot_robustness.py
 ```
 
 To use the dashboard, start a local server **from the repository root in a separate terminal** and leave it running:
@@ -84,7 +86,7 @@ ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-demo
 python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
-The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy]`. Policy variants apply only to AURA; `full` is the default. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Modify the arguments to vary loss, delay, congestion, message rate and deadlines. Each mode uses the same configured topology and traffic schedule, with paired seed indices for the loss streams.
+The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit]`. The last three default to `30`, `1`, and `12`; background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
 
 ## Measured sample
 
@@ -123,11 +125,26 @@ See the [research evaluation and ablation](docs/RESEARCH_EVALUATION.md), [per-ru
 
 A second **630-run validation set** uses seed indices 31–60. In its high-rate ablation, full AURA and the version without retry feasibility both reached 90.4% DDR; full AURA made fewer retry sends on average, but that set's paired interval includes zero. The [held-out ablation](experiments/results/holdout/ablation/summary.csv) and [held-out transport comparison](experiments/results/holdout/multiseed/summary.csv) keep the limitation visible.
 
-The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, and Smoke Detector. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. See the [validation record](docs/VALIDATION.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
+### Longer workloads and two competing flows
+
+The [480-run robustness sweep](experiments/results/robustness/config.json) uses 120 messages per run, 30 new seed indices (61–90), and four conditions. It compares one-shot delivery, fixed SR, full AURA, and AURA without the feasibility rule. Two conditions use two CBR competitors and a six-packet queue. The chart is SVG, so its labels remain sharp when opened or zoomed on GitHub.
+
+![Fixed-scale chart of deadline delivery in four 120-message NS2 conditions](experiments/plots/robustness.svg)
+
+| 120-message condition | One-shot DDR | Fixed SR DDR | AURA DDR | AURA without feasibility DDR |
+|---|---:|---:|---:|---:|
+| Moderate loss | 85.2% | 84.6% | 97.4% | 97.7% |
+| High message rate | 85.6% | 27.0% | 86.4% | 85.3% |
+| Two flows, short queue | **67.4%** | 6.8% | 56.2% | 54.3% |
+| Two flows, tight deadline | **22.8%** | 4.2% | 4.3% | 4.3% |
+
+Under two-flow congestion, AURA's DDR is **11.2 percentage points below** one-shot delivery (paired 95% interval −15.4 to −7.0 points). Under the tight deadline it is 18.4 points below (−20.8 to −16.1). The retry feasibility rule saved 0.022 and 0.019 extra sends per generated message in the high-rate and two-flow congestion conditions, respectively; its DDR difference from AURA without feasibility has an interval crossing zero in both. These results narrow the claim: AURA helps in some settings, while its retries and queueing can make critical alerts worse in crowded conditions. See [methods and interpretation](docs/RESEARCH_EVALUATION.md), [per-run data](experiments/results/robustness/runs.csv), and [paired intervals](experiments/results/robustness/paired.csv).
+
+The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, Smoke Detector, and a newly added Old Car smoke stimulus. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. The Old Car can be toggled with Alt-click according to its Packet Tracer specification, but a detector alarm transition has not been verified. See the [validation record](docs/VALIDATION.md) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 
 ## Limits
 
-The sender has a small bounded adaptive window; router queue priority, a custom C++ UDP header, and an Internet-grade congestion controller are not implemented. The 30-seed bootstrap intervals describe this workload and are not a confirmatory significance test. The logical 64-byte goodput assumption is documented. See the [engineering review](docs/ENGINEERING_REVIEW.md) for corrected issues, security scope, and remaining limits, and [progress](docs/AI_SETUP_PROGRESS.md) for the implementation record.
+The sender has a small bounded adaptive window; router queue priority, a custom C++ UDP header, and an Internet-grade congestion controller are not implemented. The 30-seed bootstrap intervals describe these workloads and are not confirmatory significance tests. The two-flow Jain score compares the two CBR background flows, not AURA against a congestion-controlled peer. The logical 64-byte goodput assumption is documented. See the [engineering review](docs/ENGINEERING_REVIEW.md) for corrected issues, security scope, and remaining limits, and [progress](docs/AI_SETUP_PROGRESS.md) for the implementation record.
 
 MIT licensed; see [LICENSE](LICENSE).
 

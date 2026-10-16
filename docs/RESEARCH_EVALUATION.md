@@ -36,6 +36,23 @@ The background CBR goodput was recorded directly at its NS2 receiving agent. In 
 
 The held-out sweep repeats the same scenarios and policies with 30 new substream indices. In the high-rate condition, full AURA and the no-feasibility variant both reached **90.4% DDR**. Full AURA used 0.339 extra sends per generated message versus 0.357 without the check: a mean difference of −0.018, with a paired interval from −0.038 to +0.002. The direction of the retry-cost result repeats, but this interval includes zero. In moderate loss, full AURA reached 94.2% DDR versus 94.6% without the check; in the tight case both reached 10.4%. This fresh set again provides **no DDR gain attributable to the feasibility decision**. The [held-out summary](../experiments/results/holdout/ablation/summary.csv), [per-run data](../experiments/results/holdout/ablation/runs.csv), and [paired intervals](../experiments/results/holdout/ablation/paired.csv) are checked in, as are the [three-mode results](../experiments/results/holdout/multiseed/summary.csv). These are separate validation replications, not additional conditions.
 
+## Longer and more congested workloads (indices 61–90)
+
+The [robustness script](../scripts/robustness.py) adds four 120-message conditions with 30 fresh seed indices each: 480 runs. Every condition compares baseline, SR, full AURA, and AURA without the feasibility decision. Two conditions split their total CBR background rate over **two** independent senders and reduce the router queue from 12 to six packets. The per-flow counters provide each background stream's received goodput and a Jain index between those two CBR streams. That score is **not** AURA-versus-background fairness and cannot establish Internet-safe congestion behavior. All variants within a condition share the same generation schedule and seed index, with the same loss-draw limitation described above.
+
+| Condition | Baseline DDR | SR DDR | Full AURA DDR | No-feasibility DDR | Full AURA routine PDR |
+|---|---:|---:|---:|---:|---:|
+| Long moderate | 85.2% | 84.6% | 97.4% | 97.7% | 100.0% |
+| Long high rate | 85.6% | 27.0% | 86.4% | 85.3% | 100.0% |
+| Two-flow congestion | **67.4%** | 6.8% | 56.2% | 54.3% | 74.7% |
+| Two-flow tight deadline | **22.8%** | 4.2% | 4.3% | 4.3% | 75.5% |
+
+In the two-flow congestion case, full AURA minus baseline DDR averaged −11.2 percentage points with a paired percentile interval of −15.4 to −7.0. In the two-flow tight case, the difference was −18.4 points (−20.8 to −16.1). These are clear **failures of the broad performance hypothesis** for these workloads. AURA still beats fixed SR in the congested case, but that is not enough: one-shot delivery meets more alert deadlines. Queueing and retry load are plausible explanations, not isolated causal findings. The separate [paired comparisons](../experiments/results/robustness/paired.csv) and [individual runs](../experiments/results/robustness/runs.csv) allow checking every value.
+
+The feasibility rule reduced extra sends per generated message by 0.022 in the long high-rate case (paired interval −0.035 to −0.009) and by 0.019 in two-flow congestion (−0.030 to −0.007). Its DDR differences from no-feasibility AURA were +1.1 and +1.9 points, respectively, with both paired intervals crossing zero. In long moderate, full AURA's DDR was 0.2 points lower. In the two-flow tight case, the variants were identical on DDR and retry overhead: the timer offered no useful decision point before the short deadline. **The new rule has a repeatable retry-saving effect in two conditions, but no established deadline-delivery gain.**
+
+The two-flow CBR Jain score averaged 0.932 for AURA in the congestion case and 0.995 in the tight case. A score close to one only means the two CBR receivers got similar rates; it says nothing about whether either flow got a fair share relative to AURA or how a TCP competitor would respond. The [fixed-scale SVG](../experiments/plots/robustness.svg) keeps the negative findings visible.
+
 ## Reproduce and inspect
 
 Run from the repository root in WSL with NS2 2.35 and Python 3.10+:
@@ -46,14 +63,17 @@ python3 scripts/multiseed.py --output /tmp/aura-multiseed
 python3 scripts/ablation.py --output /tmp/aura-ablation
 python3 scripts/multiseed.py --first-seed 31 --output /tmp/aura-heldout-multiseed
 python3 scripts/ablation.py --first-seed 31 --output /tmp/aura-heldout-ablation
+python3 scripts/robustness.py --output /tmp/aura-robustness
 cmp experiments/results/multiseed/runs.csv /tmp/aura-multiseed/runs.csv
 cmp experiments/results/ablation/runs.csv /tmp/aura-ablation/runs.csv
 cmp experiments/results/holdout/multiseed/runs.csv /tmp/aura-heldout-multiseed/runs.csv
 cmp experiments/results/holdout/ablation/runs.csv /tmp/aura-heldout-ablation/runs.csv
+cmp experiments/results/robustness/runs.csv /tmp/aura-robustness/runs.csv
+cmp experiments/results/robustness/paired.csv /tmp/aura-robustness/paired.csv
 ```
 
 For a single trace, run `ns ns2/run.tcl aura 0.15 40 120 300 1 /tmp/aura-trace 60 full` and inspect `events.csv` for `abandon`, `control.csv` for window and timeout changes, and `background.csv` for CBR delivery. Compare it with `no_feasibility` using a separate output directory. `ns2.tr` and `ns2.nam` retain packet-level evidence.
 
 ## Limits and next experiment
 
-The evaluation has only three short synthetic scenarios, eight critical messages per run, one CBR competitor, and a small window range. The fresh seeds test replication, not a new workload. The forward-time estimate ignores queueing variance; the deadline-aware policy needs testing with larger and varied traffic, longer observation windows, multiple competitors, and calibrated estimators. A wider window may expose congestion effects more clearly. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
+The evaluation now includes short and long synthetic scenarios, but the traffic schedule remains regular, the bottleneck is fixed at 128 Kb/s, and the window varies only from four to six messages. The forward-time estimate ignores queueing variance. A next study should vary burstiness, link capacity, background protocols, estimator confidence bounds, and admission or pacing rules, then evaluate whether DDR improves without harming routine or competing traffic. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.

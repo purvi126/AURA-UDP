@@ -17,18 +17,18 @@ This project asks: **can a sender give urgent alerts a better chance of arriving
 
 ## What happens inside NS2
 
-1. [The NS2 script](../ns2/run.tcl) builds a small network: an alert source, a router, a monitoring receiver, and another sender that adds background traffic. The link to the receiver is deliberately slow and can drop packets.
-2. It creates **30 messages per run**. Every fourth message is marked critical and has a delivery deadline. The others are routine messages.
+1. [The NS2 script](../ns2/run.tcl) builds a small network: an alert source, a router, a monitoring receiver, and one or two senders that add background traffic. The link to the receiver is deliberately slow and can drop packets.
+2. It creates **30 messages in the original runs or 120 in the longer stress runs**. Every fourth message is marked critical and has a delivery deadline. The others are routine messages.
 3. It runs one of three sending rules over NS2 message agents:
    - **Baseline:** send once, with no acknowledgment or retry.
    - **Selective Repeat:** keep up to four messages in flight, acknowledge delivered messages, and retry missing ones, up to five sends per message.
    - **AURA:** use acknowledgments and retries too, put the earliest-due alerts first, allow routine messages regular turns, adapt the retry timer and small sender window, and skip a retry when its estimated travel time exceeds the alert's remaining lifetime.
 4. NS2 records each meaningful step in `events.csv`: generation, sending, receiving, delivery, acknowledgment, retry, expiration, abandonment, or late arrival. `control.csv` records sender decisions; `background.csv` records how much traffic reached the competing flow. NS2 also writes packet traces and optional NAM animation files.
-5. [The metrics code](../python/analysis/metrics.py) counts each message only once. [The experiment runner](../scripts/multiseed.py) repeats three network conditions with 30 seed indices and all three sending rules: **270 runs**. [The ablation runner](../scripts/ablation.py) repeats four AURA policy variants: **360 more runs**. A fresh group of 30 seeds repeats both sets, making **1,260 runs** overall. [The chart generator](../python/analysis/plot.py) and [the dashboard](../python/dashboard/index.html) display the saved development results. The dashboard reads those files; opening it does not rerun NS2.
+5. [The metrics code](../python/analysis/metrics.py) counts each message only once. The original [transport comparison](../scripts/multiseed.py), [policy ablation](../scripts/ablation.py), and fresh-seed repeats make **1,260 short runs**. A [long-workload sweep](../scripts/robustness.py) adds **480 runs** with more messages, shorter queues, and two competing senders: **1,740 measured runs** in total. [The charts](../experiments/plots/robustness.svg) and [dashboard](../python/dashboard/index.html) display saved results. Opening the dashboard does not rerun NS2.
 
 Two useful measurements are **PDR**, the fraction of all generated messages that eventually arrived, and **DDR**, the fraction of critical messages that arrived *before their deadline*. A late alert can count toward PDR but not DDR. More retries can improve arrival while also consuming bandwidth and time.
 
-The [measured 30-seed summary](../experiments/results/multiseed/summary.csv) includes a difficult tight-deadline case where all three methods deliver few critical alerts on time. The [policy test](RESEARCH_EVALUATION.md) finds that skipping estimated-late retries saves some retry traffic under high load, but did not improve the on-time alert delivery ratio in these runs. This is a useful engineering finding, including a limitation to improve, rather than a universal performance claim.
+The [measured short-run summary](../experiments/results/multiseed/summary.csv) includes a difficult tight-deadline case where all three methods deliver few critical alerts on time. The [longer runs](../experiments/results/robustness/summary.csv) show a stronger warning: when two other senders crowd a short queue, AURA delivers fewer urgent alerts before deadline than one-shot sending. The [policy test](RESEARCH_EVALUATION.md) finds that skipping estimated-late retries saves some retry traffic under high load, but has not shown a clear improvement in on-time alert delivery. These are measured limits to the current design.
 
 ## What happens inside Cisco Packet Tracer
 
@@ -38,7 +38,7 @@ The PCs labeled TEMP, SMOKE, and ALERT represent possible traffic-generator role
 
 For a visible routed check, open PC0's browser and visit `http://10.10.30.10`. The custom page served by Server0 loaded across Router0 and Router1. [Its HTML source](../packet_tracer/documentation/server-index.html) is stored in the repo and in the saved Packet Tracer server. PC3 can load the same page, but PC3 is on Server0's LAN, so that shorter check alone does not show routing. The [Packet Tracer build guide](../packet_tracer/documentation/BUILD_GUIDE.md) lists addresses, cabling, and repeatable inspection steps.
 
-The [readable evidence diagram](../packet_tracer/documentation/media/evidence-overview.svg) explains the observed paths. The original [PC0 screenshot](../packet_tracer/documentation/media/routed-http-pc0.jpg) is kept as evidence, although its small Packet Tracer text is hard to read when enlarged. A triggered smoke-alarm change was not verified.
+The [readable evidence diagram](../packet_tracer/documentation/media/evidence-overview.svg) explains the observed paths. The original [PC0 screenshot](../packet_tracer/documentation/media/routed-http-pc0.jpg) is kept as evidence, although its small Packet Tracer text is hard to read when enlarged. The saved topology now has an Old Car named `SMOKE-TRIGGER-CAR` beside the native detector. Packet Tracer says Alt-clicking the car raises simulated smoke; the full alarm transition still needs a recorded check.
 
 ## How to explore it yourself
 
@@ -49,4 +49,4 @@ The [readable evidence diagram](../packet_tracer/documentation/media/evidence-ov
 
 ## What this project does not claim
 
-Packet Tracer verifies the campus demonstration; it does not execute AURA or validate its performance. NS2 uses a synthetic, fixed-size workload rather than live campus sensors. The results are descriptive across three tested conditions, without a broad superiority claim. This implementation has only a small bounded window, no router queue priority or custom C++ UDP header, and no proven Internet-grade congestion fairness. The gateway's lab login and wireless setup are not a production security design.
+Packet Tracer verifies the campus demonstration; it does not execute AURA or validate its performance. NS2 uses synthetic workloads rather than live campus sensors. The results are descriptive across seven tested conditions, without a broad superiority claim. This implementation has only a small bounded window, no router queue priority or custom C++ UDP header, and no proven Internet-grade congestion fairness. The gateway's lab login and wireless setup are not a production security design.

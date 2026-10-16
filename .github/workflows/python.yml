@@ -15,7 +15,11 @@ jobs:
       - run: node scripts/check_dashboard.mjs
       - name: Check reproducible ablation diagram
         run: python scripts/plot_ablation.py && git diff --exit-code -- experiments/plots/ablation.svg
+      - name: Check reproducible long-workload diagram
+        run: python scripts/plot_robustness.py && git diff --exit-code -- experiments/plots/robustness.svg
       - name: Smoke-test the seed sweep
         run: python scripts/multiseed.py --seeds 3 --output /tmp/aura-ci-sweep
       - name: Smoke-test deadline policy ablations
         run: python scripts/ablation.py --seeds 3 --output /tmp/aura-ci-ablation
+      - name: Smoke-test longer and competing-flow workloads
+        run: python scripts/robustness.py --seeds 2 --output /tmp/aura-ci-robustness
