@@ -19,9 +19,18 @@ for (const path of [
   'experiments/results/multiseed/config.json',
   'experiments/results/ablation/summary.csv',
   'experiments/results/ablation/paired.csv',
+  'experiments/results/robustness/summary.csv',
+  'experiments/results/robustness/paired.csv',
+  'experiments/results/robustness/config.json',
   ...['baseline', 'sr', 'aura'].map(mode => `experiments/results/sample/${mode}/events.csv`),
 ]) {
   if (!existsSync(resolve(base, path))) throw new Error(`Missing dashboard data: ${path}`);
+}
+const robustnessSummary = readFileSync(resolve(base, 'experiments/results/robustness/summary.csv'), 'utf8');
+for (const key of ['ddr', 'routine_pdr', 'retransmission_overhead', 'background_goodput_bps', 'background_flow_fairness_jain']) {
+  if (!robustnessSummary.split('\n', 1)[0].includes(`${key}_mean`)) {
+    throw new Error(`Robustness summary is missing ${key}`);
+  }
 }
 const ablationSummary = readFileSync(resolve(base, 'experiments/results/ablation/summary.csv'), 'utf8');
 const ablationPairs = readFileSync(resolve(base, 'experiments/results/ablation/paired.csv'), 'utf8');
