@@ -97,6 +97,19 @@ class MetricsTest(unittest.TestCase):
             self.assertEqual(result["background_received_packets"], 2)
             self.assertAlmostEqual(result["background_goodput_bps"], 3200 / .95)
 
+    def test_background_fairness_uses_received_flow_bytes(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "events.csv"
+            self.write_events(path, [(.1, "generate", 1, "routine", 0, 10),
+                                     (1, "finish", 0, "", 0, "")])
+            (Path(d) / "background.csv").write_text(
+                "time,received_packets,received_bytes,flow1_packets,flow1_bytes,flow2_packets,flow2_bytes\n"
+                "1,4,800,3,600,1,200\n", encoding="utf-8")
+            result = calculate(path)
+            self.assertAlmostEqual(result["background_flow_fairness_jain"], .8)
+            self.assertAlmostEqual(result["background_flow1_goodput_bps"], 4800 / .95)
+            self.assertAlmostEqual(result["background_flow2_goodput_bps"], 1600 / .95)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python" / "analysis"))
+from metrics import calculate
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -110,6 +115,21 @@ class NS2IntegrationTest(unittest.TestCase):
         for rows in (baseline, aura):
             self.assertEqual(rows[-1]["event"], "finish")
         self.assertEqual(baseline[-1]["time"], aura[-1]["time"])
+
+    def test_extended_workload_counts_and_competing_flows(self):
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "aura", ".15", "40",
+                            "180", "300", "61", d, "60", "full", "120", "2", "6"],
+                           check=True, capture_output=True, text=True)
+            with (Path(d) / "events.csv").open(newline="") as f:
+                rows = list(csv.DictReader(f))
+            result = calculate(Path(d) / "events.csv")
+        self.assertEqual(sum(r["event"] == "generate" for r in rows), 120)
+        self.assertEqual(result["generated"], 120)
+        self.assertGreater(result["background_flow1_goodput_bps"], 0)
+        self.assertGreater(result["background_flow2_goodput_bps"], 0)
+        self.assertGreaterEqual(result["background_flow_fairness_jain"], .5)
+        self.assertLessEqual(result["background_flow_fairness_jain"], 1)
 
 
 if __name__ == "__main__":

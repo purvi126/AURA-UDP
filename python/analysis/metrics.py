@@ -78,6 +78,7 @@ def calculate(path):
     background_path = Path(path).with_name("background.csv")
     background_packets = None
     background_goodput = None
+    flow_metrics = {}
     if background_path.exists():
         with background_path.open(newline="", encoding="utf-8") as f:
             background_rows = list(csv.DictReader(f))
@@ -89,6 +90,26 @@ def calculate(path):
             raise ValueError(f"{background_path}: negative background counter")
         # Background CBR starts at t=0.05; use the shared simulation finish.
         background_goodput = 8 * background_bytes / (end - .05)
+        flow_columns = {"flow1_packets", "flow1_bytes", "flow2_packets", "flow2_bytes"}
+        present = flow_columns.intersection(background_rows[0])
+        if present:
+            if present != flow_columns:
+                raise ValueError(f"{background_path}: incomplete per-flow counters")
+            counters = {name: int(background_rows[0][name]) for name in flow_columns}
+            if any(value < 0 for value in counters.values()):
+                raise ValueError(f"{background_path}: negative per-flow counter")
+            if (counters["flow1_packets"] + counters["flow2_packets"] != background_packets
+                    or counters["flow1_bytes"] + counters["flow2_bytes"] != background_bytes):
+                raise ValueError(f"{background_path}: per-flow counters do not match totals")
+            rate1 = 8 * counters["flow1_bytes"] / (end - .05)
+            rate2 = 8 * counters["flow2_bytes"] / (end - .05)
+            denom = 2 * (rate1**2 + rate2**2)
+            flow_metrics = {
+                "background_flow1_goodput_bps": rate1,
+                "background_flow2_goodput_bps": rate2,
+                "background_flow_fairness_jain": ((rate1 + rate2)**2 / denom
+                                                  if denom else None),
+            }
     critical_pdr = sum(mid in delivered for mid in critical) / len(critical) if critical else 0
     routine_pdr = sum(mid in delivered for mid in routine) / len(routine) if routine else 0
     routine_delays = [float(delivered[mid]["time"]) - float(generated[mid]["time"])
@@ -117,6 +138,7 @@ def calculate(path):
         # Generated messages may expire in the queue without a first send.
         "retransmission_overhead": (sends - len(sent_ids)) / n if n else 0,
         "sends": sends,
+        **flow_metrics,
     }
 
 
