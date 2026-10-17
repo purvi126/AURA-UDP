@@ -151,28 +151,40 @@ class NS2IntegrationTest(unittest.TestCase):
         self.assertLess(sum(delays["reserved_alert_slot"]), sum(delays["full"]))
         self.assertGreater(len(delays["reserved_alert_slot"]), 20)
 
-    def test_bursty_alert_schedule_and_bottleneck_sensitivity(self):
+    def test_arrival_schedule_controls_are_independent_of_link_rate(self):
         results = {}
-        for rate in (128, 256):
-            with tempfile.TemporaryDirectory() as d:
-                subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "baseline",
-                                "0", "40", "0", "300", "181", d,
-                                "60", "full", "8", "1", "6",
-                                "burst_late_alert", str(rate)],
-                               check=True, capture_output=True, text=True)
-                with (Path(d) / "events.csv").open(newline="") as f:
-                    rows = list(csv.DictReader(f))
-                results[rate] = (rows, calculate(Path(d) / "events.csv"))
-        generated = [row for row in results[128][0] if row["event"] == "generate"]
-        self.assertEqual([row["class"] for row in generated[:4]],
-                         ["routine", "routine", "routine", "critical"])
-        self.assertEqual([round(float(row["time"]), 3) for row in generated[:4]],
+        for schedule in ("regular", "regular_late_alert",
+                         "burst_first_alert", "burst_late_alert"):
+            for rate in (128, 256):
+                with tempfile.TemporaryDirectory() as d:
+                    subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "baseline",
+                                    "0", "40", "0", "300", "181", d,
+                                    "60", "full", "8", "1", "6",
+                                    schedule, str(rate)],
+                                   check=True, capture_output=True, text=True)
+                    with (Path(d) / "events.csv").open(newline="") as f:
+                        rows = list(csv.DictReader(f))
+                    generated = [row for row in rows if row["event"] == "generate"]
+                    results[schedule, rate] = (generated,
+                                               calculate(Path(d) / "events.csv"))
+        for schedule in ("regular", "regular_late_alert",
+                         "burst_first_alert", "burst_late_alert"):
+            self.assertEqual([row["time"] for row in results[schedule, 128][0]],
+                             [row["time"] for row in results[schedule, 256][0]])
+            expected = ["critical", "routine", "routine", "routine"] \
+                if schedule in ("regular", "burst_first_alert") else \
+                ["routine", "routine", "routine", "critical"]
+            self.assertEqual([row["class"] for row in results[schedule, 128][0][:4]],
+                             expected)
+        for first, late in (("regular", "regular_late_alert"),
+                            ("burst_first_alert", "burst_late_alert")):
+            self.assertEqual([row["time"] for row in results[first, 128][0]],
+                             [row["time"] for row in results[late, 128][0]])
+        self.assertEqual([round(float(row["time"]), 3) for row in
+                          results["burst_late_alert", 128][0][:4]],
                          [.1, .105, .11, .115])
-        self.assertEqual([row["time"] for row in generated],
-                         [row["time"] for row in results[256][0]
-                          if row["event"] == "generate"])
-        self.assertLess(results[256][1]["avg_delay_ms"],
-                        results[128][1]["avg_delay_ms"])
+        self.assertLess(results["burst_late_alert", 256][1]["avg_delay_ms"],
+                        results["burst_late_alert", 128][1]["avg_delay_ms"])
 
 
 if __name__ == "__main__":

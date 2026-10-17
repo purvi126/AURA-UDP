@@ -1,8 +1,8 @@
 # AURA-UDP: OTcl transport running over real NS2 Message agents and links.
 # ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR
 #   ?INTERVAL_MS? ?POLICY? ?MESSAGE_COUNT? ?BACKGROUND_SOURCES? ?QUEUE_LIMIT?
-#   ?regular|burst_late_alert? ?BOTTLENECK_KBPS?
-if {$argc < 7 || $argc > 14} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit? ?regular|burst_late_alert? ?bottleneck_kbps?"; exit 2 }
+#   ?regular|regular_late_alert|burst_first_alert|burst_late_alert? ?BOTTLENECK_KBPS?
+if {$argc < 7 || $argc > 14} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit? ?regular|regular_late_alert|burst_first_alert|burst_late_alert? ?bottleneck_kbps?"; exit 2 }
 lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy message_count bg_sources queue_limit schedule bottleneck_kbps
 if {$interval_ms eq ""} { set interval_ms 120 }
 if {$policy eq ""} { set policy full }
@@ -14,7 +14,7 @@ if {$bottleneck_kbps eq ""} { set bottleneck_kbps 128 }
 if {$mode ni {baseline sr aura}} { error "invalid mode $mode" }
 if {$policy ni {full no_feasibility fixed_window legacy reserved_alert_slot}} { error "invalid policy $policy" }
 if {$mode ne "aura" && $policy ne "full"} { error "policy variants require aura mode" }
-if {$schedule ni {regular burst_late_alert}} { error "invalid schedule $schedule" }
+if {$schedule ni {regular regular_late_alert burst_first_alert burst_late_alert}} { error "invalid schedule $schedule" }
 foreach {name value} [list loss $loss delay_ms $delay_ms background_kbps $bg_kbps deadline_ms $deadline_ms interval_ms $interval_ms] {
     if {![regexp {^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$} $value]} { error "$name must be a non-negative finite number" }
 }
@@ -25,7 +25,7 @@ if {![string is integer -strict $message_count] || $message_count < 1} { error "
 if {![string is integer -strict $bg_sources] || $bg_sources ni {1 2}} { error "background_sources must be 1 or 2" }
 if {![string is integer -strict $queue_limit] || $queue_limit < 1} { error "queue_limit must be a positive integer" }
 if {![string is integer -strict $bottleneck_kbps] || $bottleneck_kbps < 1} { error "bottleneck_kbps must be a positive integer" }
-if {$schedule eq "burst_late_alert" && $message_count % 4 != 0} { error "burst_late_alert requires message_count divisible by 4" }
+if {$schedule in {burst_first_alert burst_late_alert} && $message_count % 4 != 0} { error "burst schedules require message_count divisible by 4" }
 if {$outdir eq ""} { error "output directory must not be empty" }
 file mkdir $outdir
 # The seed is a replication/substream index. Keep data and ACK loss on
@@ -294,14 +294,17 @@ proc finish {} {
 if {$bg_kbps > 0} { $ns at 0.05 "$cbr start" }
 if {$bg_kbps > 0 && $bg_sources == 2} { $ns at 0.05 "$cbr2 start" }
 for {set i 0} {$i < $message_count} {incr i} {
-    if {$schedule eq "burst_late_alert"} {
-        # Preserve the mean offered load while placing each alert after three
-        # closely spaced routine messages. All modes share this exact schedule.
+    if {$schedule in {burst_first_alert burst_late_alert}} {
+        # Burst groups start four intervals apart. Comparing first/late alert
+        # within a burst holds generation times fixed while varying class order.
         set t [expr {0.1 + int($i/4)*4*$interval_ms/1000.0 + ($i%4)*0.005}]
-        if {$i % 4 == 3} { set cls critical } else { set cls routine }
     } else {
         set t [expr {0.1 + $i*$interval_ms/1000.0}]
+    }
+    if {$schedule in {regular burst_first_alert}} {
         if {$i % 4 == 0} { set cls critical } else { set cls routine }
+    } else {
+        if {$i % 4 == 3} { set cls critical } else { set cls routine }
     }
     $ns at $t "generate $cls"
 }

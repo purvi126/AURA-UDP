@@ -21,7 +21,8 @@ WORKLOADS = {
     "crowded": (.15, 40, 180, 300, 60, 120, 2, 6),
     "tight": (.30, 80, 180, 120, 120, 120, 2, 6),
 }
-SCHEDULES = ("regular", "burst_late_alert")
+SCHEDULES = ("regular", "regular_late_alert",
+             "burst_first_alert", "burst_late_alert")
 LINK_RATES = (128, 256)
 VARIANTS = (("baseline", "baseline", "full"),
             ("aura", "aura", "full"),
@@ -109,7 +110,9 @@ def main():
                       for name, config in WORKLOADS.items()},
         "schedules": {
             "regular": "One message each interval; alert is first in every four.",
-            "burst_late_alert": "Three routine messages 5 ms apart, then an alert 5 ms later; bursts start four intervals apart.",
+            "regular_late_alert": "One message each interval; alert is last in every four.",
+            "burst_first_alert": "Four messages 5 ms apart, alert first; bursts start four intervals apart.",
+            "burst_late_alert": "Four messages 5 ms apart, alert last; bursts start four intervals apart.",
         },
         "bottleneck_kbps": LINK_RATES,
         "variants": [variant for variant, _, _ in VARIANTS],
