@@ -25,7 +25,8 @@ class MetricsTest(unittest.TestCase):
                             (.01, "send", 1, "critical", 1, .2),
                             (.11, "send", 1, "critical", 2, .2),
                             (.15, "deliver", 1, "critical", 2, .2),
-                            (.16, "duplicate", 1, "critical", 1, .2)]:
+                            (.16, "duplicate", 1, "critical", 1, .2),
+                            (.3, "finish", 0, "", 0, "")]:
                     w.writerow(row)
             result = calculate(path)
             self.assertEqual(result["delivered"], 1)
@@ -41,7 +42,16 @@ class MetricsTest(unittest.TestCase):
                 w.writerow([0, "generate", 1, "critical", 0, .1])
                 w.writerow([0, "generate", 2, "routine", 0, .1])
                 w.writerow([.01, "send", 1, "critical", 1, .1])
+                w.writerow([.2, "finish", 0, "", 0, ""])
             self.assertEqual(calculate(path)["retransmission_overhead"], 0)
+
+    def test_rejects_incomplete_event_log(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "events.csv"
+            self.write_events(path, [(.1, "generate", 1, "critical", 0, .3),
+                                     (.2, "deliver", 1, "critical", 1, .3)])
+            with self.assertRaisesRegex(ValueError, "missing finish event"):
+                calculate(path)
 
     def test_finish_event_defines_throughput_window(self):
         with tempfile.TemporaryDirectory() as d:

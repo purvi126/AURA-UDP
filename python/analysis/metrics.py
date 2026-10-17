@@ -63,6 +63,8 @@ def calculate(path):
             abandoned_ids.add(mid)
     if not generated:
         raise ValueError(f"{path}: no generated messages")
+    if finish_time is None:
+        raise ValueError(f"{path}: missing finish event; simulation may be incomplete")
     n = len(generated)
     critical = [mid for mid, row in generated.items() if row["class"] == "critical"]
     routine = [mid for mid, row in generated.items() if row["class"] == "routine"]
@@ -71,7 +73,7 @@ def calculate(path):
     if any(delay < 0 for delay in delays):
         raise ValueError(f"{path}: delivery precedes generation")
     start = min(float(row["time"]) for row in generated.values())
-    end = finish_time if finish_time is not None else max(times)
+    end = finish_time
     if end <= start:
         raise ValueError(f"{path}: observation interval must end after generation")
     span = end - start
