@@ -25,3 +25,5 @@ jobs:
         run: python scripts/robustness.py --seeds 2 --output /tmp/aura-ci-robustness
       - name: Smoke-test reserved alert admission
         run: python scripts/reservation_study.py --seeds 2 --output /tmp/aura-ci-reservation
+      - name: Smoke-test burst and link-rate sensitivity
+        run: python scripts/sensitivity.py --seeds 2 --output /tmp/aura-ci-sensitivity
