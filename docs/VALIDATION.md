@@ -12,7 +12,7 @@ Packet Tracer connectivity was checked on 2026-10-13 with Packet Tracer 9.0 on W
 | PC3 HTTP to Server0 on the same LAN | `http://10.10.30.10` rendered the custom AURA campus page; this is not a routed path |
 | Native IoT registration | Tablet PC0 opened Home Gateway at `192.168.25.1`; Devices listed both `TEMP-SENSOR` and `SMOKE-SENSOR` |
 | IoT telemetry view | Temperature and smoke alarm/level fields appeared on the gateway page |
-| Smoke stimulus device | On 2026-10-16, an Old Car named `SMOKE-TRIGGER-CAR` was added beside `SMOKE-SENSOR` in the saved topology. Packet Tracer's device specifications identify the Old Car as a smoke source and Alt-click as its control. The sensor alarm transition remains unverified. |
+| Smoke stimulus device | On 2026-10-16, an Old Car named `SMOKE-TRIGGER-CAR` was added beside `SMOKE-SENSOR`. On 2026-10-17, Packet Tracer's physical view showed both devices inside Corporate Office, as required by the car specification. The car's Attributes tab showed `state 1`, but the detector's Attributes tab still showed `level 0, state 0`. No smoke alarm transition was observed. |
 | Python and NS2 tests | Twenty-two tests passed locally on 2026-10-16, including a 120-message, two-flow reservation admission check and received-flow fairness calculation |
 | Transport sweep | 30 seeds × 3 conditions × 3 modes = 270 NS2 runs; a second full sweep reproduced `runs.csv`, `summary.csv`, and `paired.csv` byte for byte |
 | AURA ablation | 30 seeds × 3 conditions × 4 policies = 360 NS2 runs; a second full sweep reproduced `runs.csv`, `summary.csv`, and `paired.csv` byte for byte |
