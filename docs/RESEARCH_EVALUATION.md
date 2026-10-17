@@ -68,6 +68,25 @@ The [reservation script](../scripts/reservation_study.py) ran one-shot, original
 
 In two-flow congestion, reserved minus original AURA DDR is +14.0 percentage points (paired 95% interval +9.1 to +18.7), while reserved minus baseline is +0.2 points (−3.7 to +4.1). Under the tight deadline, reservation gains +17.9 points over original AURA (+15.3 to +20.7) yet remains **3.3 points below one-shot** (−6.4 to −0.3). Thus the new admission rule substantially reduces the earlier regression but does not solve the tight case. It shifts service away from routine messages: routine PDR decreases by 14.6 and 13.9 points in the two crowded cases, respectively. The [per-run data](../experiments/results/reservation/runs.csv), [summary](../experiments/results/reservation/summary.csv), [paired intervals](../experiments/results/reservation/paired.csv), and [configuration](../experiments/results/reservation/config.json) allow independent checks. Competing CBR throughput and the two-CBR-flow balance score are included, but they still do not establish fairness to an Internet transport.
 
+## Arrival-order and link-rate sensitivity (indices 181–210)
+
+The [sensitivity script](../scripts/sensitivity.py) tests a different explanation for the crowded results: an alert's position within a short burst may matter as much as the average message rate. It repeats the two crowded workloads above with either one message every interval (**regular**, critical first in each group of four) or three routine messages 5 ms apart followed by a critical message 5 ms later (**late-alert burst**). Groups start four intervals apart, preserving the same average offered message rate and 30 critical messages per 120-message run. The bottleneck is either 128 or 256 Kb/s; the loss rate, propagation delay, two competing CBR sources, and six-packet queue are held fixed within each workload. One-shot, original AURA, and reserved AURA each run on 30 fresh substream indices per condition: **720 runs**. The comparison pairs seed indices and traffic schedules, subject to the mode-dependent loss-draw limitation described above. These conditions were chosen after observing earlier results, so their bootstrap intervals are descriptive.
+
+| Workload | Arrival schedule | Link | One-shot DDR | Original AURA DDR | Reserved DDR | Reserved routine PDR |
+|---|---|---:|---:|---:|---:|---:|
+| Crowded | Regular | 128 Kb/s | 69.9% | 58.1% | 70.8% | 63.6% |
+| Crowded | Regular | 256 Kb/s | 85.1% | 96.7% | 95.8% | 100.0% |
+| Crowded | Late alert burst | 128 Kb/s | 25.4% | 52.8% | 56.8% | 59.3% |
+| Crowded | Late alert burst | 256 Kb/s | 85.0% | 93.4% | 93.8% | 100.0% |
+| Tight deadline | Regular | 128 Kb/s | 23.4% | 4.0% | 21.4% | 60.4% |
+| Tight deadline | Regular | 256 Kb/s | 69.6% | 26.1% | 70.4% | 81.9% |
+| Tight deadline | Late alert burst | 128 Kb/s | 6.4% | 0.9% | 18.2% | 59.6% |
+| Tight deadline | Late alert burst | 256 Kb/s | 66.8% | 20.6% | 67.1% | 80.6% |
+
+At 128 Kb/s with regular arrivals, reservation raises DDR over original AURA by 12.7 points in the crowded workload (paired 95% interval +7.1 to +17.9), but differs from one-shot by only +0.9 points (−3.6 to +5.2). In the tight workload, reserved DDR is 2.0 points below one-shot (−5.3 to +1.3). With the late-alert burst at 128 Kb/s, one-shot DDR drops sharply; reserved AURA exceeds it by 31.3 points in crowded traffic (+27.9 to +34.9) and 11.8 points in the tight workload (+8.9 to +14.7). This is evidence for these configured burst conditions, not proof that reservation always wins.
+
+At 256 Kb/s, reserved AURA exceeds one-shot in both crowded conditions, but in both tight conditions the paired intervals for its difference from one-shot span zero. Original AURA remains far below both in the tight conditions, despite the higher link rate. Reservation also costs routine delivery when capacity is constrained: at 128 Kb/s, the crowded regular case falls from 78.0% routine PDR under original AURA to 63.6% with reservation; the crowded burst case falls from 77.6% to 59.3%. At 256 Kb/s, both AURA policies deliver 100% of routine messages in the crowded cases, but tight-case routine delivery remains lower with reservation than with original AURA. Background goodput and the between-CBR-flow balance score are in the [summary](../experiments/results/sensitivity/summary.csv); those measurements still cannot establish transport fairness against TCP or Internet safety. See [per-run values](../experiments/results/sensitivity/runs.csv), [paired intervals](../experiments/results/sensitivity/paired.csv), and the [exact configuration](../experiments/results/sensitivity/config.json).
+
 ## Reproduce and inspect
 
 Run from the repository root in WSL with NS2 2.35 and Python 3.10+:
@@ -80,6 +99,7 @@ python3 scripts/multiseed.py --first-seed 31 --output /tmp/aura-heldout-multisee
 python3 scripts/ablation.py --first-seed 31 --output /tmp/aura-heldout-ablation
 python3 scripts/robustness.py --output /tmp/aura-robustness
 python3 scripts/reservation_study.py --output /tmp/aura-reservation
+python3 scripts/sensitivity.py --output /tmp/aura-sensitivity
 cmp experiments/results/multiseed/runs.csv /tmp/aura-multiseed/runs.csv
 cmp experiments/results/ablation/runs.csv /tmp/aura-ablation/runs.csv
 cmp experiments/results/holdout/multiseed/runs.csv /tmp/aura-heldout-multiseed/runs.csv
@@ -88,10 +108,13 @@ cmp experiments/results/robustness/runs.csv /tmp/aura-robustness/runs.csv
 cmp experiments/results/robustness/paired.csv /tmp/aura-robustness/paired.csv
 cmp experiments/results/reservation/runs.csv /tmp/aura-reservation/runs.csv
 cmp experiments/results/reservation/paired.csv /tmp/aura-reservation/paired.csv
+cmp experiments/results/sensitivity/runs.csv /tmp/aura-sensitivity/runs.csv
+cmp experiments/results/sensitivity/summary.csv /tmp/aura-sensitivity/summary.csv
+cmp experiments/results/sensitivity/paired.csv /tmp/aura-sensitivity/paired.csv
 ```
 
 For a single trace, run `ns ns2/run.tcl aura 0.15 40 120 300 1 /tmp/aura-trace 60 full` and inspect `events.csv` for `abandon`, `control.csv` for window and timeout changes, and `background.csv` for CBR delivery. Compare it with `no_feasibility` using a separate output directory. `ns2.tr` and `ns2.nam` retain packet-level evidence.
 
 ## Limits and next experiment
 
-The evaluation now includes short and long synthetic scenarios, but the traffic schedule remains regular, the bottleneck is fixed at 128 Kb/s, and the window varies only from four to six messages. The forward-time estimate ignores queueing variance. The reservation result demonstrates an alert-versus-routine tradeoff, and the tight-case DDR remains below one-shot delivery. A next study should vary burstiness, link capacity, background protocols, estimator confidence bounds, and pacing rules, then evaluate whether DDR improves without harming routine or competing traffic. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
+The evaluation includes short and long synthetic scenarios, regular and one late-alert burst schedule, and two bottleneck rates. The window varies only from four to six messages, and the forward-time estimate ignores queueing variance. The reservation result demonstrates an alert-versus-routine tradeoff; several tight cases still fail to beat one-shot delivery. A next study should vary burst sizes and spacing, add a competing TCP-like flow, and test estimator confidence bounds and pacing rules, then evaluate whether DDR improves without harming routine or competing traffic. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.

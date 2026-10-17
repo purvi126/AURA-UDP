@@ -2,7 +2,7 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
-[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
+[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [720-run burst and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
 **Release status:** the new admission policy is committed on `main` for review, but no newer release has been published while the native Packet Tracer smoke-alarm transition remains unverified. The [remaining desktop checks](docs/PENDING_DESKTOP_CHECKS.md) record the exact alarm, gateway, and screenshot work for the next Packet Tracer session.
 
@@ -20,7 +20,7 @@ The same campus question is explored in two independent tools. **NS2 produces pe
 
 ```mermaid
 flowchart TB
-  N1["Sensor workload<br/>30 or 120 generated messages"] --> P["Sender policy<br/>baseline, SR, or AURA"] --> N2["Lossy 128 Kb/s link<br/>with a configurable queue"] --> N3["Monitoring receiver<br/>unique delivery and deadline checks"]
+  N1["Sensor workload<br/>30 or 120 generated messages"] --> P["Sender policy<br/>baseline, SR, or AURA"] --> N2["Lossy bottleneck link<br/>128 or 256 Kb/s in sensitivity study"] --> N3["Monitoring receiver<br/>unique delivery and deadline checks"]
   N3 -- "ACK for SR and AURA" --> P
   P --> L["Sender decisions<br/>send, retry, abandon, window"]
   N3 --> E["Receiver events<br/>deliver or late"]
@@ -48,7 +48,7 @@ The sensor-to-gateway view and PC0-to-server HTTP route are **two separate check
 | Where to look | What is implemented there |
 |---|---|
 | [ns2/run.tcl](ns2/run.tcl) | NS2 nodes, links, loss, traffic, baseline/SR/AURA sender behavior, ACKs, deadlines, and event logs. |
-| [scripts/multiseed.py](scripts/multiseed.py), [scripts/ablation.py](scripts/ablation.py), [scripts/robustness.py](scripts/robustness.py), [scripts/reservation_study.py](scripts/reservation_study.py), and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs, isolate policy choices, test longer crowded workloads and the alert-slot candidate, and turn logs into measured results. |
+| [scripts/multiseed.py](scripts/multiseed.py), [scripts/ablation.py](scripts/ablation.py), [scripts/robustness.py](scripts/robustness.py), [scripts/reservation_study.py](scripts/reservation_study.py), [scripts/sensitivity.py](scripts/sensitivity.py), and [python/analysis/metrics.py](python/analysis/metrics.py) | Repeat NS2 runs, isolate policy choices, test crowded traffic, burst arrivals, and link capacity, and turn logs into measured results. |
 | [python/dashboard/index.html](python/dashboard/index.html) | Explore the saved NS2 results and message events; it does not run a simulation. |
 | [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt) | Editable Cisco Packet Tracer campus with routed PCs, Server0, Home Gateway, Temperature Monitor, and Smoke Detector. |
 | [server-index.html](packet_tracer/documentation/server-index.html) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md) | Source of Server0's HTTP page, address plan, and steps to inspect the Packet Tracer paths. |
@@ -70,6 +70,7 @@ python3 scripts/multiseed.py
 python3 scripts/ablation.py
 python3 scripts/robustness.py
 python3 scripts/reservation_study.py
+python3 scripts/sensitivity.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
 python3 scripts/plot_robustness.py
 ```
@@ -89,7 +90,7 @@ ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-demo
 python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
-The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit]`. The last three default to `30`, `1`, and `12`; background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default and `reserved_alert_slot` is the new candidate. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
+The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit] [schedule] [bottleneck_kbps]`. The defaults are 30 messages, one background source, a 12-packet queue, a regular schedule, and a 128 Kb/s bottleneck. The alternate `burst_late_alert` schedule requires a message count divisible by four. Background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default and `reserved_alert_slot` is the experimental candidate. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
 
 ## Measured sample
 
@@ -157,6 +158,23 @@ The [reservation study](experiments/results/reservation/config.json) repeats the
 | Two flows, tight deadline | **25.6%** | 4.3% | 22.2% | 59.0% |
 
 Against original AURA, reservation raises DDR by 14.0 points in the two-flow short-queue case (paired 95% interval 9.1–18.7) and 17.9 points in the tight case (15.3–20.7). The short-queue result is approximately level with one-shot delivery: reserved minus baseline is 0.2 points (−3.7 to 4.1). **In the tight case one-shot still wins:** reserved minus baseline is −3.3 points (−6.4 to −0.3). Reservation also lowers routine delivery from 77.9% to 63.3% and from 73.0% to 59.0% in those two cases. This is a measured alert-versus-routine tradeoff, not broad superiority. The [per-run data](experiments/results/reservation/runs.csv) and [paired intervals](experiments/results/reservation/paired.csv) include retry cost and competing-flow outcomes; the [dashboard](python/dashboard/index.html) makes those columns inspectable.
+
+### What changes when alerts arrive late in a burst?
+
+The [sensitivity study](docs/RESEARCH_EVALUATION.md) uses 30 new seeds per condition. Each 120-message run has two competing CBR flows and a six-packet queue. A regular schedule generates one message per interval with the alert first in each group of four; the alternate schedule sends three routine messages 5 ms apart and then the alert 5 ms later. The burst groups start four intervals apart, preserving the average message rate. The table reports **timely critical deliveries divided by all 30 generated critical messages**.
+
+| Workload and schedule | Link | One-shot DDR | Original AURA DDR | Reserved AURA DDR |
+|---|---:|---:|---:|---:|
+| Crowded, regular | 128 Kb/s | 69.9% | 58.1% | 70.8% |
+| Crowded, late alert burst | 128 Kb/s | 25.4% | 52.8% | 56.8% |
+| Tight deadline, regular | 128 Kb/s | 23.4% | 4.0% | 21.4% |
+| Tight deadline, late alert burst | 128 Kb/s | 6.4% | 0.9% | 18.2% |
+| Crowded, regular | 256 Kb/s | 85.1% | 96.7% | 95.8% |
+| Crowded, late alert burst | 256 Kb/s | 85.0% | 93.4% | 93.8% |
+| Tight deadline, regular | 256 Kb/s | 69.6% | 26.1% | 70.4% |
+| Tight deadline, late alert burst | 256 Kb/s | 66.8% | 20.6% | 67.1% |
+
+Reservation helps most when routine packets would occupy the sender window before an alert. At 128 Kb/s in the tight **regular** case, its 21.4% DDR still falls below one-shot's 23.4%; the paired interval for the difference spans zero. At 128 Kb/s with **late alerts**, it beats one-shot in both tested workloads, but routine delivery is lower than under original AURA. Faster links reduce some bottleneck pressure, yet original AURA still performs poorly in the tight cases. The [full methods](docs/RESEARCH_EVALUATION.md), [run data](experiments/results/sensitivity/runs.csv), and [paired intervals](experiments/results/sensitivity/paired.csv) show the exact conditions and uncertainty. These are descriptive synthetic results, not a claim of general or Internet-safe performance.
 
 The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, Smoke Detector, and an Old Car smoke stimulus. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. The car and detector are in the same physical Corporate Office container. The car reported `state 1` during the latest inspection, while the detector still reported `level 0, state 0`; an alarm transition has not been verified. See the [validation record](docs/VALIDATION.md) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 
