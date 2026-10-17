@@ -22,6 +22,12 @@ for (const path of [
   'experiments/results/robustness/summary.csv',
   'experiments/results/robustness/paired.csv',
   'experiments/results/robustness/config.json',
+  'experiments/results/reservation/summary.csv',
+  'experiments/results/reservation/paired.csv',
+  'experiments/results/reservation/config.json',
+  'experiments/results/sensitivity/summary.csv',
+  'experiments/results/sensitivity/paired.csv',
+  'experiments/results/sensitivity/config.json',
   ...['baseline', 'sr', 'aura'].map(mode => `experiments/results/sample/${mode}/events.csv`),
 ]) {
   if (!existsSync(resolve(base, path))) throw new Error(`Missing dashboard data: ${path}`);
@@ -41,5 +47,15 @@ for (const key of ['ddr', 'retransmission_overhead', 'routine_pdr', 'background_
   if (!ablationPairs.includes(`,${key},no_feasibility,`)) {
     throw new Error(`Ablation pairs are missing ${key}`);
   }
+}
+const sensitivitySummary = readFileSync(resolve(base, 'experiments/results/sensitivity/summary.csv'), 'utf8');
+const sensitivityPairs = readFileSync(resolve(base, 'experiments/results/sensitivity/paired.csv'), 'utf8');
+for (const key of ['ddr', 'routine_pdr', 'retransmission_overhead', 'background_goodput_bps']) {
+  if (!sensitivitySummary.split('\n', 1)[0].includes(`${key}_mean`)) {
+    throw new Error(`Sensitivity summary is missing ${key}`);
+  }
+}
+if (!sensitivityPairs.includes(',aura_reserved,baseline,ddr,')) {
+  throw new Error('Sensitivity pairs are missing the reserved-versus-baseline DDR comparison');
 }
 console.log('Dashboard script, elements, and measured data paths are valid');

@@ -25,3 +25,7 @@ The software experiments can run in the background. The following observations n
 ## 4. Update evidence and release only after the checks
 
 Record the Packet Tracer version, date, observed readings, and exact outcome in [VALIDATION.md](VALIDATION.md). Replace or supplement the small [routed HTTP screenshot](../packet_tracer/documentation/media/routed-http-pc0.jpg) with a native-resolution capture and update the README evidence captions. Commit the validated `.pkt` and captures, rerun the software test suite and CI, then publish a release if the smoke transition and connectivity gates pass. A failed or inconclusive alarm test should remain visible in the README and should not be presented as complete.
+
+## 5. Visual check of the updated local dashboard
+
+The dashboard's new burst/link-rate panel passed a static script and data-path check, but it still needs an interactive visual check when a browser window is available. Start the server from the repository root, open `http://localhost:8000/python/dashboard/`, switch all three controls in step 05, and compare the shown DDR and routine-delivery values with [the saved summary](../experiments/results/sensitivity/summary.csv). Inspect both desktop and narrow-window layouts for clipped labels, horizontal table scrolling, and keyboard focus. Record the outcome in [VALIDATION.md](VALIDATION.md); do not infer a visual pass from the static check alone.
