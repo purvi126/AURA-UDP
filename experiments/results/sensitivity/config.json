@@ -25,7 +25,9 @@
   },
   "schedules": {
     "regular": "One message each interval; alert is first in every four.",
-    "burst_late_alert": "Three routine messages 5 ms apart, then an alert 5 ms later; bursts start four intervals apart."
+    "regular_late_alert": "One message each interval; alert is last in every four.",
+    "burst_first_alert": "Four messages 5 ms apart, alert first; bursts start four intervals apart.",
+    "burst_late_alert": "Four messages 5 ms apart, alert last; bursts start four intervals apart."
   },
   "bottleneck_kbps": [
     128,
