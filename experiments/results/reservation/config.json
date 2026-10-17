@@ -1,0 +1,53 @@
+{
+  "first_seed": 121,
+  "seeds": 30,
+  "variants": [
+    "baseline",
+    "aura",
+    "aura_reserved"
+  ],
+  "scenarios": {
+    "long_moderate": {
+      "loss": 0.15,
+      "delay_ms": 40,
+      "background_kbps": 80,
+      "deadline_ms": 300,
+      "interval_ms": 120,
+      "message_count": 120,
+      "background_sources": 1,
+      "queue_limit": 12
+    },
+    "long_high_rate": {
+      "loss": 0.15,
+      "delay_ms": 40,
+      "background_kbps": 120,
+      "deadline_ms": 300,
+      "interval_ms": 60,
+      "message_count": 120,
+      "background_sources": 1,
+      "queue_limit": 12
+    },
+    "two_flow_congestion": {
+      "loss": 0.15,
+      "delay_ms": 40,
+      "background_kbps": 180,
+      "deadline_ms": 300,
+      "interval_ms": 60,
+      "message_count": 120,
+      "background_sources": 2,
+      "queue_limit": 6
+    },
+    "two_flow_tight": {
+      "loss": 0.3,
+      "delay_ms": 80,
+      "background_kbps": 180,
+      "deadline_ms": 120,
+      "interval_ms": 120,
+      "message_count": 120,
+      "background_sources": 2,
+      "queue_limit": 6
+    }
+  },
+  "paired_bootstrap_resamples": 5000,
+  "interpretation": "Matched seed indices; transport-dependent loss draws can diverge. Descriptive intervals only."
+}

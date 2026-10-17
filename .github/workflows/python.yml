@@ -23,3 +23,5 @@ jobs:
         run: python scripts/ablation.py --seeds 3 --output /tmp/aura-ci-ablation
       - name: Smoke-test longer and competing-flow workloads
         run: python scripts/robustness.py --seeds 2 --output /tmp/aura-ci-robustness
+      - name: Smoke-test reserved alert admission
+        run: python scripts/reservation_study.py --seeds 2 --output /tmp/aura-ci-reservation

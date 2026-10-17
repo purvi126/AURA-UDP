@@ -1,7 +1,7 @@
 # AURA-UDP: OTcl transport running over real NS2 Message agents and links.
 # ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR
 #   ?INTERVAL_MS? ?POLICY? ?MESSAGE_COUNT? ?BACKGROUND_SOURCES? ?QUEUE_LIMIT?
-if {$argc < 7 || $argc > 12} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy? ?message_count? ?background_sources? ?queue_limit?"; exit 2 }
+if {$argc < 7 || $argc > 12} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit?"; exit 2 }
 lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy message_count bg_sources queue_limit
 if {$interval_ms eq ""} { set interval_ms 120 }
 if {$policy eq ""} { set policy full }
@@ -9,7 +9,7 @@ if {$message_count eq ""} { set message_count 30 }
 if {$bg_sources eq ""} { set bg_sources 1 }
 if {$queue_limit eq ""} { set queue_limit 12 }
 if {$mode ni {baseline sr aura}} { error "invalid mode $mode" }
-if {$policy ni {full no_feasibility fixed_window legacy}} { error "invalid policy $policy" }
+if {$policy ni {full no_feasibility fixed_window legacy reserved_alert_slot}} { error "invalid policy $policy" }
 if {$mode ne "aura" && $policy ne "full"} { error "policy variants require aura mode" }
 foreach {name value} [list loss $loss delay_ms $delay_ms background_kbps $bg_kbps deadline_ms $deadline_ms interval_ms $interval_ms] {
     if {![regexp {^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$} $value]} { error "$name must be a non-negative finite number" }
@@ -218,7 +218,8 @@ proc pump {} {
     foreach id [array names state] { if {$state($id) eq "pending"} { incr active } }
     while {$active < $window && [llength $pending] > 0} {
         set index 0
-        if {$mode eq "aura" && $policy ne "legacy" && $critical_streak >= 3} {
+        if {$mode eq "aura" && $policy ne "legacy" && $critical_streak >= 3
+            && !($policy eq "reserved_alert_slot" && $active >= $window - 1)} {
             for {set i 0} {$i < [llength $pending]} {incr i} {
                 set candidate [lindex $pending $i]
                 if {$state($candidate) eq "queued" && $class($candidate) eq "routine"} {
@@ -228,6 +229,10 @@ proc pump {} {
             }
         }
         set id [lindex $pending $index]
+        # Keep one admission slot available for the next critical alert.
+        # This policy is an experimental variant; it does not change full.
+        if {$mode eq "aura" && $policy eq "reserved_alert_slot"
+            && $class($id) eq "routine" && $active >= $window - 1} { break }
         set pending [lreplace $pending $index $index]
         if {$state($id) ne "queued"} { continue }
         set state($id) pending

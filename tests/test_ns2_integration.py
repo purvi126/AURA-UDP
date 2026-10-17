@@ -131,6 +131,26 @@ class NS2IntegrationTest(unittest.TestCase):
         self.assertGreaterEqual(result["background_flow_fairness_jain"], .5)
         self.assertLessEqual(result["background_flow_fairness_jain"], 1)
 
+    def test_reserved_alert_slot_reduces_crowded_alert_wait(self):
+        delays = {}
+        for policy in ("full", "reserved_alert_slot"):
+            with tempfile.TemporaryDirectory() as d:
+                subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "aura",
+                                ".15", "40", "180", "300", "61", d,
+                                "60", policy, "120", "2", "6"],
+                               check=True, capture_output=True, text=True)
+                with (Path(d) / "events.csv").open(newline="") as f:
+                    rows = list(csv.DictReader(f))
+            generated = {row["id"]: float(row["time"]) for row in rows
+                         if row["event"] == "generate" and row["class"] == "critical"}
+            first_sends = {row["id"]: float(row["time"]) for row in rows
+                           if row["event"] == "send" and row["attempt"] == "1"
+                           and row["class"] == "critical"}
+            delays[policy] = [first_sends[mid] - time for mid, time in generated.items()
+                              if mid in first_sends]
+        self.assertLess(sum(delays["reserved_alert_slot"]), sum(delays["full"]))
+        self.assertGreater(len(delays["reserved_alert_slot"]), 20)
+
 
 if __name__ == "__main__":
     unittest.main()

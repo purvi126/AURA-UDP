@@ -53,6 +53,21 @@ The feasibility rule reduced extra sends per generated message by 0.022 in the l
 
 The two-flow CBR Jain score averaged 0.932 for AURA in the congestion case and 0.995 in the tight case. A score close to one only means the two CBR receivers got similar rates; it says nothing about whether either flow got a fair share relative to AURA or how a TCP competitor would respond. The [fixed-scale SVG](../experiments/plots/robustness.svg) keeps the negative findings visible.
 
+## Alert-slot admission study (indices 121–150)
+
+The crowded failure motivated a narrower hypothesis: a newly generated alert can wait behind routine packets already occupying all sender-window slots. The experimental `reserved_alert_slot` policy admits at most `window − 1` routine messages when no alert is queued. A critical message may use the remaining slot immediately. This does not preempt an in-flight packet or add router-level priority. It retains the original deadline-feasibility check, timeout estimator, and 4–6 slot window. The original `full` implementation and the 61–90 results remain unchanged.
+
+The [reservation script](../scripts/reservation_study.py) ran one-shot, original AURA, and reserved AURA on the same four 120-message conditions, with 30 additional seed indices per condition: 360 runs. Within a condition, each mode uses the same traffic schedule and seed index, while mode-dependent loss-draw consumption remains a limitation. This study was motivated by observed failures, so its descriptive paired intervals are **not a preregistered proof of general superiority**.
+
+| Condition | One-shot DDR | Original AURA DDR | Reserved DDR | Original routine PDR | Reserved routine PDR |
+|---|---:|---:|---:|---:|---:|
+| Long moderate | 84.0% | 96.4% | 96.7% | 100.0% | 100.0% |
+| Long high rate | 84.2% | 85.9% | 89.4% | 100.0% | 100.0% |
+| Two-flow congestion | 69.6% | 55.8% | 69.8% | 77.9% | 63.3% |
+| Two-flow tight deadline | **25.6%** | 4.3% | 22.2% | 73.0% | 59.0% |
+
+In two-flow congestion, reserved minus original AURA DDR is +14.0 percentage points (paired 95% interval +9.1 to +18.7), while reserved minus baseline is +0.2 points (−3.7 to +4.1). Under the tight deadline, reservation gains +17.9 points over original AURA (+15.3 to +20.7) yet remains **3.3 points below one-shot** (−6.4 to −0.3). Thus the new admission rule substantially reduces the earlier regression but does not solve the tight case. It shifts service away from routine messages: routine PDR decreases by 14.6 and 13.9 points in the two crowded cases, respectively. The [per-run data](../experiments/results/reservation/runs.csv), [summary](../experiments/results/reservation/summary.csv), [paired intervals](../experiments/results/reservation/paired.csv), and [configuration](../experiments/results/reservation/config.json) allow independent checks. Competing CBR throughput and the two-CBR-flow balance score are included, but they still do not establish fairness to an Internet transport.
+
 ## Reproduce and inspect
 
 Run from the repository root in WSL with NS2 2.35 and Python 3.10+:
@@ -64,16 +79,19 @@ python3 scripts/ablation.py --output /tmp/aura-ablation
 python3 scripts/multiseed.py --first-seed 31 --output /tmp/aura-heldout-multiseed
 python3 scripts/ablation.py --first-seed 31 --output /tmp/aura-heldout-ablation
 python3 scripts/robustness.py --output /tmp/aura-robustness
+python3 scripts/reservation_study.py --output /tmp/aura-reservation
 cmp experiments/results/multiseed/runs.csv /tmp/aura-multiseed/runs.csv
 cmp experiments/results/ablation/runs.csv /tmp/aura-ablation/runs.csv
 cmp experiments/results/holdout/multiseed/runs.csv /tmp/aura-heldout-multiseed/runs.csv
 cmp experiments/results/holdout/ablation/runs.csv /tmp/aura-heldout-ablation/runs.csv
 cmp experiments/results/robustness/runs.csv /tmp/aura-robustness/runs.csv
 cmp experiments/results/robustness/paired.csv /tmp/aura-robustness/paired.csv
+cmp experiments/results/reservation/runs.csv /tmp/aura-reservation/runs.csv
+cmp experiments/results/reservation/paired.csv /tmp/aura-reservation/paired.csv
 ```
 
 For a single trace, run `ns ns2/run.tcl aura 0.15 40 120 300 1 /tmp/aura-trace 60 full` and inspect `events.csv` for `abandon`, `control.csv` for window and timeout changes, and `background.csv` for CBR delivery. Compare it with `no_feasibility` using a separate output directory. `ns2.tr` and `ns2.nam` retain packet-level evidence.
 
 ## Limits and next experiment
 
-The evaluation now includes short and long synthetic scenarios, but the traffic schedule remains regular, the bottleneck is fixed at 128 Kb/s, and the window varies only from four to six messages. The forward-time estimate ignores queueing variance. A next study should vary burstiness, link capacity, background protocols, estimator confidence bounds, and admission or pacing rules, then evaluate whether DDR improves without harming routine or competing traffic. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
+The evaluation now includes short and long synthetic scenarios, but the traffic schedule remains regular, the bottleneck is fixed at 128 Kb/s, and the window varies only from four to six messages. The forward-time estimate ignores queueing variance. The reservation result demonstrates an alert-versus-routine tradeoff, and the tight-case DDR remains below one-shot delivery. A next study should vary burstiness, link capacity, background protocols, estimator confidence bounds, and pacing rules, then evaluate whether DDR improves without harming routine or competing traffic. The current bounded window and short timer are lab heuristics; [RFC 8085](https://www.rfc-editor.org/rfc/rfc8085.html) and [RFC 6298](https://www.rfc-editor.org/rfc/rfc6298.html) provide reference guidance, but this implementation does not claim full compliance.
