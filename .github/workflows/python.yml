@@ -27,3 +27,5 @@ jobs:
         run: python scripts/reservation_study.py --seeds 2 --output /tmp/aura-ci-reservation
       - name: Smoke-test burst and link-rate sensitivity
         run: python scripts/sensitivity.py --seeds 2 --output /tmp/aura-ci-sensitivity
+      - name: Smoke-test paired arrival contrasts
+        run: python scripts/sensitivity_contrasts.py --input /tmp/aura-ci-sensitivity
