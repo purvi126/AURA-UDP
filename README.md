@@ -2,7 +2,7 @@
 
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
-[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [720-run burst and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
+[Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [1,440-run arrival and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
 **Release status:** the new admission policy is committed on `main` for review, but no newer release has been published while the native Packet Tracer smoke-alarm transition remains unverified. The [remaining desktop checks](docs/PENDING_DESKTOP_CHECKS.md) record the exact alarm, gateway, and screenshot work for the next Packet Tracer session.
 
@@ -71,6 +71,7 @@ python3 scripts/ablation.py
 python3 scripts/robustness.py
 python3 scripts/reservation_study.py
 python3 scripts/sensitivity.py
+python3 scripts/sensitivity_contrasts.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
 python3 scripts/plot_robustness.py
 ```
@@ -90,7 +91,7 @@ ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-demo
 python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
-The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit] [schedule] [bottleneck_kbps]`. The defaults are 30 messages, one background source, a 12-packet queue, a regular schedule, and a 128 Kb/s bottleneck. The alternate `burst_late_alert` schedule requires a message count divisible by four. Background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default and `reserved_alert_slot` is the experimental candidate. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
+The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit] [schedule] [bottleneck_kbps]`. The defaults are 30 messages, one background source, a 12-packet queue, a regular schedule, and a 128 Kb/s bottleneck. The schedule can be `regular`, `regular_late_alert`, `burst_first_alert`, or `burst_late_alert`; burst schedules require a message count divisible by four. Background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default and `reserved_alert_slot` is the experimental candidate. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
 
 ## Measured sample
 
@@ -161,20 +162,20 @@ Against original AURA, reservation raises DDR by 14.0 points in the two-flow sho
 
 ### What changes when alerts arrive late in a burst?
 
-The [sensitivity study](docs/RESEARCH_EVALUATION.md) uses 30 new seeds per condition. Each 120-message run has two competing CBR flows and a six-packet queue. A regular schedule generates one message per interval with the alert first in each group of four; the alternate schedule sends three routine messages 5 ms apart and then the alert 5 ms later. The burst groups start four intervals apart, preserving the average message rate. The table reports **timely critical deliveries divided by all 30 generated critical messages**.
+The [sensitivity study](docs/RESEARCH_EVALUATION.md) uses 30 new seeds per condition. Each 120-message run has two competing CBR flows and a six-packet queue. Four schedules cross **regular versus burst arrivals** with **alert first versus last** in each group of four. Burst messages are 5 ms apart and groups start four intervals apart, preserving nominal average load. The table below shows the constrained 128 Kb/s link; the [full summary](experiments/results/sensitivity/summary.csv) also covers 256 Kb/s. DDR counts timely critical deliveries out of **all 30 generated critical messages**.
 
-| Workload and schedule | Link | One-shot DDR | Original AURA DDR | Reserved AURA DDR |
-|---|---:|---:|---:|---:|
-| Crowded, regular | 128 Kb/s | 69.9% | 58.1% | 70.8% |
-| Crowded, late alert burst | 128 Kb/s | 25.4% | 52.8% | 56.8% |
-| Tight deadline, regular | 128 Kb/s | 23.4% | 4.0% | 21.4% |
-| Tight deadline, late alert burst | 128 Kb/s | 6.4% | 0.9% | 18.2% |
-| Crowded, regular | 256 Kb/s | 85.1% | 96.7% | 95.8% |
-| Crowded, late alert burst | 256 Kb/s | 85.0% | 93.4% | 93.8% |
-| Tight deadline, regular | 256 Kb/s | 69.6% | 26.1% | 70.4% |
-| Tight deadline, late alert burst | 256 Kb/s | 66.8% | 20.6% | 67.1% |
+| Workload | Arrival pattern | One-shot DDR | Original AURA DDR | Reserved AURA DDR |
+|---|---|---:|---:|---:|
+| Crowded | Regular, alert first | 69.9% | 58.1% | 70.8% |
+| Crowded | Regular, alert last | 74.0% | 55.9% | 74.4% |
+| Crowded | Burst, alert first | 69.0% | 58.2% | 72.0% |
+| Crowded | Burst, alert last | 25.4% | 52.8% | 56.8% |
+| Tight deadline | Regular, alert first | 23.4% | 4.0% | 21.4% |
+| Tight deadline | Regular, alert last | 10.7% | 1.1% | 9.8% |
+| Tight deadline | Burst, alert first | 32.2% | 5.1% | 24.3% |
+| Tight deadline | Burst, alert last | 6.4% | 0.9% | 18.2% |
 
-Reservation helps most when routine packets would occupy the sender window before an alert. At 128 Kb/s in the tight **regular** case, its 21.4% DDR still falls below one-shot's 23.4%; the paired interval for the difference spans zero. At 128 Kb/s with **late alerts**, it beats one-shot in both tested workloads, but routine delivery is lower than under original AURA. Faster links reduce some bottleneck pressure, yet original AURA still performs poorly in the tight cases. The [full methods](docs/RESEARCH_EVALUATION.md), [run data](experiments/results/sensitivity/runs.csv), and [paired intervals](experiments/results/sensitivity/paired.csv) show the exact conditions and uncertainty. These are descriptive synthetic results, not a claim of general or Internet-safe performance.
+At 128 Kb/s in crowded traffic, moving an alert from first to last **within the same burst timing** lowers one-shot DDR by 43.6 percentage points (paired 95% interval −46.7 to −40.3) and reserved AURA DDR by 15.2 points (−19.7 to −10.7). Burst spacing with the alert **first** changes one-shot DDR by only −0.9 points (−3.2 to +1.4); the sharp penalty appears with the alert last. Reservation helps in that tested combination, but it lowers routine delivery from 77.6% under original AURA to 59.3%. Original AURA remains weak in tight-deadline cases even at 256 Kb/s. The [full methods](docs/RESEARCH_EVALUATION.md), [run data](experiments/results/sensitivity/runs.csv), [transport comparisons](experiments/results/sensitivity/paired.csv), and [schedule contrasts](experiments/results/sensitivity/schedule_pairs.csv) show the exact conditions and uncertainty. These are descriptive synthetic results, not a claim of general or Internet-safe performance.
 
 The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, Smoke Detector, and an Old Car smoke stimulus. Both sensors have wireless links and appear by name in the gateway's device list on Tablet PC0. The tablet showed their temperature and smoke-level fields. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. PC0 loaded the custom HTTP page from Server0 across both routers, and PC3 loaded it on the server LAN. The car and detector are in the same physical Corporate Office container. The car reported `state 1` during the latest inspection, while the detector still reported `level 0, state 0`; an alarm transition has not been verified. See the [validation record](docs/VALIDATION.md) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md). These are connectivity observations in Packet Tracer, not transport performance measurements.
 

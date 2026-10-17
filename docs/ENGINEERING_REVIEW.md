@@ -16,13 +16,13 @@ Reviewed initially on 2026-10-15; software and documentation checks were extende
 | Research logic | Reliability alone could hide missed alert deadlines or wasted late retries. | Keep every generated critical alert in the DDR denominator; log sender `abandon` decisions and compare with a no-feasibility ablation. |
 | Traffic impact | A critical-first sender could obscure starvation of routine traffic or effects on the CBR competitor. | Track routine PDR, class delivery balance, and received CBR goodput; disclose the tight-deadline degradation. |
 | Reproducibility | One shared RNG could couple data and ACK loss draws. | Give the two packet-error models separately seeded RNG streams and pair runs by NS2 substream index. |
-| Arrival sensitivity | A regular 128 Kb/s workload concealed how late alerts in a burst change queueing and deadline delivery. | Add configurable burst arrivals and bottleneck rate, then save 720 fresh-seed runs with paired intervals and routine-delivery tradeoffs. |
+| Arrival sensitivity | A regular 128 Kb/s workload concealed how late alerts in a burst change queueing and deadline delivery. | Cross two arrival spacings with two alert positions and two link rates, then save 1,440 fresh-seed runs with paired schedule and transport intervals. |
 
 ## Security and performance
 
 The dashboard is static, has no account or database, and inserts CSV text through DOM text nodes rather than HTML markup. Its data paths and JavaScript syntax are checked in CI. The Packet Tracer HTTP page is a lab connectivity demonstration; its gateway login and wireless setup are not a production security design. No credentials are required by the NS2 or Python scripts.
 
-The workload is intentionally finite: 30 or 120 generated messages per NS2 run, at most five sends per reliable message, and 2,820 checked-in measured runs across the short, held-out, robustness, reservation, and sensitivity studies. The Python scripts process one event log at a time. No long-lived worker, listener, or retained browser subscription is part of this project. Larger traces would warrant streaming the metrics parser and benchmarking memory use before claiming scale.
+The workload is intentionally finite: 30 or 120 generated messages per NS2 run, at most five sends per reliable message, and 3,540 checked-in measured runs across the short, held-out, robustness, reservation, and sensitivity studies. The Python scripts process one event log at a time. No long-lived worker, listener, or retained browser subscription is part of this project. Larger traces would warrant streaming the metrics parser and benchmarking memory use before claiming scale.
 
 ## Verification and limits
 

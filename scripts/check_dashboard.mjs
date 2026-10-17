@@ -27,6 +27,7 @@ for (const path of [
   'experiments/results/reservation/config.json',
   'experiments/results/sensitivity/summary.csv',
   'experiments/results/sensitivity/paired.csv',
+  'experiments/results/sensitivity/schedule_pairs.csv',
   'experiments/results/sensitivity/config.json',
   ...['baseline', 'sr', 'aura'].map(mode => `experiments/results/sample/${mode}/events.csv`),
 ]) {
@@ -50,6 +51,7 @@ for (const key of ['ddr', 'retransmission_overhead', 'routine_pdr', 'background_
 }
 const sensitivitySummary = readFileSync(resolve(base, 'experiments/results/sensitivity/summary.csv'), 'utf8');
 const sensitivityPairs = readFileSync(resolve(base, 'experiments/results/sensitivity/paired.csv'), 'utf8');
+const schedulePairs = readFileSync(resolve(base, 'experiments/results/sensitivity/schedule_pairs.csv'), 'utf8');
 for (const key of ['ddr', 'routine_pdr', 'retransmission_overhead', 'background_goodput_bps']) {
   if (!sensitivitySummary.split('\n', 1)[0].includes(`${key}_mean`)) {
     throw new Error(`Sensitivity summary is missing ${key}`);
@@ -57,5 +59,10 @@ for (const key of ['ddr', 'routine_pdr', 'retransmission_overhead', 'background_
 }
 if (!sensitivityPairs.includes(',aura_reserved,baseline,ddr,')) {
   throw new Error('Sensitivity pairs are missing the reserved-versus-baseline DDR comparison');
+}
+for (const effect of ['alert_order_regular', 'alert_order_burst', 'clustering_alert_first', 'clustering_alert_last']) {
+  if (!schedulePairs.includes(`,${effect},`)) {
+    throw new Error(`Sensitivity schedule pairs are missing ${effect}`);
+  }
 }
 console.log('Dashboard script, elements, and measured data paths are valid');
