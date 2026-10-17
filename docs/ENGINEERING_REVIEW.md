@@ -1,6 +1,6 @@
 # Engineering review
 
-Reviewed 2026-10-15 against the current source, saved Packet Tracer file, and regenerated NS2 results.
+Reviewed initially on 2026-10-15; software and documentation checks were extended through 2026-10-17. The Packet Tracer alarm transition still needs direct observation.
 
 ## Corrections made
 
@@ -16,15 +16,16 @@ Reviewed 2026-10-15 against the current source, saved Packet Tracer file, and re
 | Research logic | Reliability alone could hide missed alert deadlines or wasted late retries. | Keep every generated critical alert in the DDR denominator; log sender `abandon` decisions and compare with a no-feasibility ablation. |
 | Traffic impact | A critical-first sender could obscure starvation of routine traffic or effects on the CBR competitor. | Track routine PDR, class delivery balance, and received CBR goodput; disclose the tight-deadline degradation. |
 | Reproducibility | One shared RNG could couple data and ACK loss draws. | Give the two packet-error models separately seeded RNG streams and pair runs by NS2 substream index. |
+| Arrival sensitivity | A regular 128 Kb/s workload concealed how late alerts in a burst change queueing and deadline delivery. | Add configurable burst arrivals and bottleneck rate, then save 720 fresh-seed runs with paired intervals and routine-delivery tradeoffs. |
 
 ## Security and performance
 
 The dashboard is static, has no account or database, and inserts CSV text through DOM text nodes rather than HTML markup. Its data paths and JavaScript syntax are checked in CI. The Packet Tracer HTTP page is a lab connectivity demonstration; its gateway login and wireless setup are not a production security design. No credentials are required by the NS2 or Python scripts.
 
-The workload is intentionally finite: 30 generated messages per NS2 run, at most five sends per reliable message, 270 runs in the transport sweep and 360 in the policy ablation. The Python scripts process one short event log at a time. No long-lived worker, listener, or retained browser subscription is part of this project. Larger traces would warrant streaming the metrics parser and benchmarking memory use before claiming scale.
+The workload is intentionally finite: 30 or 120 generated messages per NS2 run, at most five sends per reliable message, and 2,820 checked-in measured runs across the short, held-out, robustness, reservation, and sensitivity studies. The Python scripts process one event log at a time. No long-lived worker, listener, or retained browser subscription is part of this project. Larger traces would warrant streaming the metrics parser and benchmarking memory use before claiming scale.
 
 ## Verification and limits
 
-Run `python3 -m unittest discover -s tests -v` under WSL with NS2 and `node scripts/check_dashboard.mjs` from the repository root. Reproduce the full sweep with the commands in [VALIDATION.md](VALIDATION.md). The CI workflow checks NS2 integration, a three-seed sweep, and dashboard assets on every push.
+Run `python3 -m unittest discover -s tests -v` under WSL with NS2 and `node scripts/check_dashboard.mjs` from the repository root. Reproduce the full sweeps with the commands in [VALIDATION.md](VALIDATION.md). The CI workflow checks NS2 integration, dashboard assets, and short smoke sweeps for the multi-seed experiment runners on each push. The 2026-10-17 local check passed 24 tests; [CI run 39009613371](https://github.com/purvi126/AURA-UDP/actions/runs/39009613371) passed for the new dashboard panel.
 
-Packet Tracer 9.0 was inspected with the editable topology open: the two routers, two switches, monitoring server, gateway, tablet, Temperature Monitor, and Smoke Detector are present. The saved evidence verifies routed HTTP and gateway registration. A triggered smoke alarm was not verified, and Packet Tracer does not execute the AURA transport. The 30-seed NS2 results remain descriptive for three short synthetic conditions; they are not a general performance guarantee. The feasibility ablation does not show a DDR gain. The 80 ms RTO floor and bounded window are lab heuristics, not a complete UDP congestion controller. NAM remains optional and was not changed.
+Packet Tracer 9.0 was inspected with the editable topology open: the two routers, two switches, monitoring server, gateway, tablet, Temperature Monitor, and Smoke Detector are present. The saved evidence verifies routed HTTP and gateway registration. A triggered smoke alarm was not verified, and Packet Tracer does not execute the AURA transport. The 30-seed NS2 results cover selected synthetic conditions; they are not a general performance guarantee. The feasibility ablation does not show a DDR gain. The reservation and burst studies show condition-dependent alert gains alongside lower routine delivery. The 80 ms RTO floor and bounded window are lab heuristics, not a complete UDP congestion controller. NAM remains optional and was not changed. The new dashboard panel has passed static checks but still needs the [visual check](PENDING_DESKTOP_CHECKS.md) when the desktop is available.
