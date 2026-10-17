@@ -151,6 +151,29 @@ class NS2IntegrationTest(unittest.TestCase):
         self.assertLess(sum(delays["reserved_alert_slot"]), sum(delays["full"]))
         self.assertGreater(len(delays["reserved_alert_slot"]), 20)
 
+    def test_bursty_alert_schedule_and_bottleneck_sensitivity(self):
+        results = {}
+        for rate in (128, 256):
+            with tempfile.TemporaryDirectory() as d:
+                subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), "baseline",
+                                "0", "40", "0", "300", "181", d,
+                                "60", "full", "8", "1", "6",
+                                "burst_late_alert", str(rate)],
+                               check=True, capture_output=True, text=True)
+                with (Path(d) / "events.csv").open(newline="") as f:
+                    rows = list(csv.DictReader(f))
+                results[rate] = (rows, calculate(Path(d) / "events.csv"))
+        generated = [row for row in results[128][0] if row["event"] == "generate"]
+        self.assertEqual([row["class"] for row in generated[:4]],
+                         ["routine", "routine", "routine", "critical"])
+        self.assertEqual([round(float(row["time"]), 3) for row in generated[:4]],
+                         [.1, .105, .11, .115])
+        self.assertEqual([row["time"] for row in generated],
+                         [row["time"] for row in results[256][0]
+                          if row["event"] == "generate"])
+        self.assertLess(results[256][1]["avg_delay_ms"],
+                        results[128][1]["avg_delay_ms"])
+
 
 if __name__ == "__main__":
     unittest.main()

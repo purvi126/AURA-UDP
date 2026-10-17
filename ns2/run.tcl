@@ -1,16 +1,20 @@
 # AURA-UDP: OTcl transport running over real NS2 Message agents and links.
 # ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR
 #   ?INTERVAL_MS? ?POLICY? ?MESSAGE_COUNT? ?BACKGROUND_SOURCES? ?QUEUE_LIMIT?
-if {$argc < 7 || $argc > 12} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit?"; exit 2 }
-lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy message_count bg_sources queue_limit
+#   ?regular|burst_late_alert? ?BOTTLENECK_KBPS?
+if {$argc < 7 || $argc > 14} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit? ?regular|burst_late_alert? ?bottleneck_kbps?"; exit 2 }
+lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy message_count bg_sources queue_limit schedule bottleneck_kbps
 if {$interval_ms eq ""} { set interval_ms 120 }
 if {$policy eq ""} { set policy full }
 if {$message_count eq ""} { set message_count 30 }
 if {$bg_sources eq ""} { set bg_sources 1 }
 if {$queue_limit eq ""} { set queue_limit 12 }
+if {$schedule eq ""} { set schedule regular }
+if {$bottleneck_kbps eq ""} { set bottleneck_kbps 128 }
 if {$mode ni {baseline sr aura}} { error "invalid mode $mode" }
 if {$policy ni {full no_feasibility fixed_window legacy reserved_alert_slot}} { error "invalid policy $policy" }
 if {$mode ne "aura" && $policy ne "full"} { error "policy variants require aura mode" }
+if {$schedule ni {regular burst_late_alert}} { error "invalid schedule $schedule" }
 foreach {name value} [list loss $loss delay_ms $delay_ms background_kbps $bg_kbps deadline_ms $deadline_ms interval_ms $interval_ms] {
     if {![regexp {^(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$} $value]} { error "$name must be a non-negative finite number" }
 }
@@ -20,6 +24,8 @@ if {![string is integer -strict $seed] || $seed < 0} { error "seed must be a non
 if {![string is integer -strict $message_count] || $message_count < 1} { error "message_count must be a positive integer" }
 if {![string is integer -strict $bg_sources] || $bg_sources ni {1 2}} { error "background_sources must be 1 or 2" }
 if {![string is integer -strict $queue_limit] || $queue_limit < 1} { error "queue_limit must be a positive integer" }
+if {![string is integer -strict $bottleneck_kbps] || $bottleneck_kbps < 1} { error "bottleneck_kbps must be a positive integer" }
+if {$schedule eq "burst_late_alert" && $message_count % 4 != 0} { error "burst_late_alert requires message_count divisible by 4" }
 if {$outdir eq ""} { error "output directory must not be empty" }
 file mkdir $outdir
 # The seed is a replication/substream index. Keep data and ACK loss on
@@ -48,7 +54,7 @@ set delay "${delay_ms}ms"
 $ns duplex-link $src $router 1Mb 2ms DropTail
 $ns duplex-link $bgsrc $router 1Mb 2ms DropTail
 if {$bg_sources == 2} { $ns duplex-link $bgsrc2 $router 1Mb 2ms DropTail }
-$ns duplex-link $router $dst 128Kb $delay DropTail
+$ns duplex-link $router $dst "${bottleneck_kbps}Kb" $delay DropTail
 $ns queue-limit $router $dst $queue_limit
 set data_loss [new ErrorModel]
 $data_loss unit pkt
@@ -288,8 +294,15 @@ proc finish {} {
 if {$bg_kbps > 0} { $ns at 0.05 "$cbr start" }
 if {$bg_kbps > 0 && $bg_sources == 2} { $ns at 0.05 "$cbr2 start" }
 for {set i 0} {$i < $message_count} {incr i} {
-    set t [expr {0.1 + $i*$interval_ms/1000.0}]
-    if {$i % 4 == 0} { set cls critical } else { set cls routine }
+    if {$schedule eq "burst_late_alert"} {
+        # Preserve the mean offered load while placing each alert after three
+        # closely spaced routine messages. All modes share this exact schedule.
+        set t [expr {0.1 + int($i/4)*4*$interval_ms/1000.0 + ($i%4)*0.005}]
+        if {$i % 4 == 3} { set cls critical } else { set cls routine }
+    } else {
+        set t [expr {0.1 + $i*$interval_ms/1000.0}]
+        if {$i % 4 == 0} { set cls critical } else { set cls routine }
+    }
     $ns at $t "generate $cls"
 }
 set finish_time [expr {max(6.0, 0.1 + $message_count*$interval_ms/1000.0 + 2.5)}]
