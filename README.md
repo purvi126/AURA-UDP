@@ -4,7 +4,7 @@
 
 [Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
-**Release status:** the new admission policy is committed on `main` for review, but no newer release has been published while the native Packet Tracer smoke-alarm transition remains unverified.
+**Release status:** the new admission policy is committed on `main` for review, but no newer release has been published while the native Packet Tracer smoke-alarm transition remains unverified. The [remaining desktop checks](docs/PENDING_DESKTOP_CHECKS.md) record the exact alarm, gateway, and screenshot work for the next Packet Tracer session.
 
 **Computer Networks Lab Review 2:** [seven-page PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) · [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx). Prepared by Purvi Valmeti and M Harshita Sri, it explains the implementation, NS2 results, Packet Tracer captures, and remaining work. The approximately 70–75% milestone is a project planning estimate.
 
