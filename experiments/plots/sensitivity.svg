@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1270" viewBox="0 0 1120 1270" role="img" aria-labelledby="title desc">
+<title id="title">Alert arrival schedule sensitivity at a 128 Kb/s bottleneck</title>
+<desc id="desc">Fixed zero-to-100-percent deadline delivery bars compare one-shot, original AURA, and reserved AURA in two crowded workloads. Four schedules separate regular or burst timing from alert-first or alert-last order. Each result averages 30 NS2 seed indices.</desc>
+<rect width="1120" height="1270" fill="#f5f2eb"/>
+<text x="40" y="48" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#163b43">When does alert order matter?</text>
+<text x="40" y="78" font-family="Arial,sans-serif" font-size="16" fill="#52666b">Deadline delivery ratio · 128 Kb/s bottleneck · 30 paired seeds per condition · fixed 0–100% scale</text>
+<rect x="28" y="105" width="1064" height="545" rx="18" fill="#fffefa" stroke="#d7dedb"/>
+<text x="50" y="139" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#163b43">Crowded link · 300 ms alert deadline</text>
+<text x="50" y="163" font-family="Arial,sans-serif" font-size="14" fill="#52666b">Two competing CBR flows · six-packet DropTail queue · 120 generated messages (30 alerts) per run</text>
+<text x="50" y="198" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Regular · alert first</text>
+<line x1="50" y1="292" x2="1065" y2="292" stroke="#e7eeea"/>
+<text x="55" y="222" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="206" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="206" width="468.3" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="222" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">69.9%</text>
+<text x="55" y="249" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="233" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="233" width="389.3" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="249" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">58.1%</text>
+<text x="55" y="276" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="260" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="260" width="474.2" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="276" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">70.8%</text>
+<text x="50" y="312" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Regular · alert last</text>
+<line x1="50" y1="406" x2="1065" y2="406" stroke="#e7eeea"/>
+<text x="55" y="336" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="320" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="320" width="495.8" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="336" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">74.0%</text>
+<text x="55" y="363" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="347" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="347" width="374.5" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="363" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">55.9%</text>
+<text x="55" y="390" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="374" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="374" width="498.8" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="390" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">74.4%</text>
+<text x="50" y="426" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Burst · alert first</text>
+<line x1="50" y1="520" x2="1065" y2="520" stroke="#e7eeea"/>
+<text x="55" y="450" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="434" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="434" width="462.3" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="450" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">69.0%</text>
+<text x="55" y="477" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="461" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="461" width="390.1" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="477" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">58.2%</text>
+<text x="55" y="504" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="488" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="488" width="482.4" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="504" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">72.0%</text>
+<text x="50" y="540" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Burst · alert last</text>
+<line x1="50" y1="634" x2="1065" y2="634" stroke="#e7eeea"/>
+<text x="55" y="564" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="548" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="548" width="170.5" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="564" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">25.4%</text>
+<text x="55" y="591" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="575" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="575" width="353.6" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="591" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">52.8%</text>
+<text x="55" y="618" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="602" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="602" width="380.4" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="618" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">56.8%</text>
+<rect x="28" y="662" width="1064" height="545" rx="18" fill="#fffefa" stroke="#d7dedb"/>
+<text x="50" y="696" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#163b43">Tight deadline · 120 ms alert deadline</text>
+<text x="50" y="720" font-family="Arial,sans-serif" font-size="14" fill="#52666b">Two competing CBR flows · six-packet DropTail queue · 120 generated messages (30 alerts) per run</text>
+<text x="50" y="755" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Regular · alert first</text>
+<line x1="50" y1="849" x2="1065" y2="849" stroke="#e7eeea"/>
+<text x="55" y="779" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="763" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="763" width="157.1" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="779" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">23.4%</text>
+<text x="55" y="806" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="790" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="790" width="26.8" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="806" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">4.0%</text>
+<text x="55" y="833" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="817" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="817" width="143.7" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="833" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">21.4%</text>
+<text x="50" y="869" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Regular · alert last</text>
+<line x1="50" y1="963" x2="1065" y2="963" stroke="#e7eeea"/>
+<text x="55" y="893" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="877" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="877" width="71.5" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="893" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">10.7%</text>
+<text x="55" y="920" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="904" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="904" width="7.4" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="920" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">1.1%</text>
+<text x="55" y="947" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="931" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="931" width="65.5" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="947" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">9.8%</text>
+<text x="50" y="983" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Burst · alert first</text>
+<line x1="50" y1="1077" x2="1065" y2="1077" stroke="#e7eeea"/>
+<text x="55" y="1007" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="991" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="991" width="215.9" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="1007" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">32.2%</text>
+<text x="55" y="1034" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="1018" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="1018" width="34.2" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="1034" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">5.1%</text>
+<text x="55" y="1061" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="1045" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="1045" width="163.0" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="1061" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">24.3%</text>
+<text x="50" y="1097" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#20343a">Burst · alert last</text>
+<line x1="50" y1="1191" x2="1065" y2="1191" stroke="#e7eeea"/>
+<text x="55" y="1121" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">One-shot</text>
+<rect x="230" y="1105" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="1105" width="43.2" height="19" rx="5" fill="#b45a32"/>
+<text x="918" y="1121" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">6.4%</text>
+<text x="55" y="1148" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Original AURA</text>
+<rect x="230" y="1132" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="1132" width="6.0" height="19" rx="5" fill="#087b78"/>
+<text x="918" y="1148" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">0.9%</text>
+<text x="55" y="1175" font-family="Arial,sans-serif" font-size="14" fill="#354b4f">Reserved AURA</text>
+<rect x="230" y="1159" width="670" height="19" rx="5" fill="#e9eeeb"/>
+<rect x="230" y="1159" width="122.1" height="19" rx="5" fill="#68549b"/>
+<text x="918" y="1175" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#20343a">18.2%</text>
+<text x="40" y="1243" font-family="Arial,sans-serif" font-size="14" fill="#52666b">Bars show timely alerts divided by all generated alerts. Reservation can lower routine delivery; read the paired CSVs for that tradeoff.</text>
+</svg>

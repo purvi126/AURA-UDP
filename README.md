@@ -6,7 +6,7 @@
 
 **Release status:** the new admission policy is committed on `main` for review, but no newer release has been published while the native Packet Tracer smoke-alarm transition remains unverified. The [remaining desktop checks](docs/PENDING_DESKTOP_CHECKS.md) record the exact alarm, gateway, and screenshot work for the next Packet Tracer session.
 
-**Computer Networks Lab Review 2:** [seven-page PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) · [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx). Prepared by Purvi Valmeti and M Harshita Sri, it explains the implementation, NS2 results, Packet Tracer captures, and remaining work. The approximately 70–75% milestone is a project planning estimate.
+**Preparing for the final review?** Start with the [five-minute demonstration and evidence guide](docs/FINAL_REVIEW_GUIDE.md). The earlier [seven-page Review 2 PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) and [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx) are a **15 October progress snapshot**, not the current project status. The approximately 70–75% figure in that report was a planning estimate, not a measured completion metric.
 
 **Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer**
 
@@ -53,6 +53,8 @@ The sensor-to-gateway view and PC0-to-server HTTP route are **two separate check
 | [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt) | Editable Cisco Packet Tracer campus with routed PCs, Server0, Home Gateway, Temperature Monitor, and Smoke Detector. |
 | [server-index.html](packet_tracer/documentation/server-index.html) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md) | Source of Server0's HTTP page, address plan, and steps to inspect the Packet Tracer paths. |
 
+For the academic scope and likely reviewer questions, see [academic review notes](docs/ACADEMIC_REVIEW.md). The NS2/Packet Tracer topic sheet lists alternatives such as TCP/UDP comparisons and IoT protocols; this project evaluates a specific deadline-aware datagram policy and does not claim to implement those other topics.
+
 Numbered datagrams and ACKs are carried by NS2 `Agent/Message` instances. The sender retries individually; the receiver suppresses duplicate delivery. AURA adds deadline-ordered alert admission, a routine-traffic guard, an explicit estimate of whether a retry can arrive in time, RTT-based timing, and a bounded 4–6-message congestion window. An **experimental alert-reservation policy** keeps one sender slot free when only routine messages are waiting. See the [policy specification](docs/PROTOCOL.md). The [evaluation](docs/RESEARCH_EVALUATION.md) reports where that change helps and where the one-shot baseline still wins.
 
 ## Requirements and quick start
@@ -74,6 +76,7 @@ python3 scripts/sensitivity.py
 python3 scripts/sensitivity_contrasts.py
 python3 python/analysis/plot.py experiments/results/sample/summary.csv experiments/plots/sample.svg
 python3 scripts/plot_robustness.py
+python3 scripts/plot_sensitivity.py
 ```
 
 To use the dashboard, start a local server **from the repository root in a separate terminal** and leave it running:
@@ -163,6 +166,10 @@ Against original AURA, reservation raises DDR by 14.0 points in the two-flow sho
 ### What changes when alerts arrive late in a burst?
 
 The [sensitivity study](docs/RESEARCH_EVALUATION.md) uses 30 new seeds per condition. Each 120-message run has two competing CBR flows and a six-packet queue. Four schedules cross **regular versus burst arrivals** with **alert first versus last** in each group of four. Burst messages are 5 ms apart and groups start four intervals apart, preserving nominal average load. The table below shows the constrained 128 Kb/s link; the [full summary](experiments/results/sensitivity/summary.csv) also covers 256 Kb/s. DDR counts timely critical deliveries out of **all 30 generated critical messages**.
+
+![Fixed-scale comparison of one-shot, original AURA, and reserved AURA under four arrival schedules and two crowded workloads](experiments/plots/sensitivity.svg)
+
+The chart is generated directly from the saved CSV by [plot_sensitivity.py](scripts/plot_sensitivity.py), so its labels remain sharp when enlarged on GitHub.
 
 | Workload | Arrival pattern | One-shot DDR | Original AURA DDR | Reserved AURA DDR |
 |---|---|---:|---:|---:|

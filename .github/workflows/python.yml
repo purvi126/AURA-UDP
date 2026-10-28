@@ -17,6 +17,8 @@ jobs:
         run: python scripts/plot_ablation.py && git diff --exit-code -- experiments/plots/ablation.svg
       - name: Check reproducible long-workload diagram
         run: python scripts/plot_robustness.py && git diff --exit-code -- experiments/plots/robustness.svg
+      - name: Check reproducible arrival-sensitivity diagram
+        run: python scripts/plot_sensitivity.py && git diff --exit-code -- experiments/plots/sensitivity.svg
       - name: Smoke-test the seed sweep
         run: python scripts/multiseed.py --seeds 3 --output /tmp/aura-ci-sweep
       - name: Smoke-test deadline policy ablations
