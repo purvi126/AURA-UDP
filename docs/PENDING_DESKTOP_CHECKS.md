@@ -1,29 +1,16 @@
-# Checks reserved for a Packet Tracer desktop session
+# Remaining Packet Tracer desktop checks
 
-The software experiments can run in the background. The following observations need an uninterrupted Packet Tracer window, so they are deliberately **not marked complete** in the validation record. The saved starting point is [AURA-UDP-campus.pkt](../packet_tracer/topology/AURA-UDP-campus.pkt); use a copy for the experiment and keep the original as a rollback point.
+Packet Tracer 9.0 was retested on 2026-10-29 using the main [saved topology](../packet_tracer/topology/AURA-UDP-campus.pkt). The Old Car and Smoke Detector now share Corporate Office → Main Wiring Closet. The main file was saved with the car off (`state 0`). See [VALIDATION.md](VALIDATION.md) for measurements and native screenshots.
 
-## 1. Verify the smoke detector threshold
+## Completed observations
 
-1. Open the topology in Packet Tracer 9.0. In Physical view, confirm `SMOKE-SENSOR` and `SMOKE-TRIGGER-CAR` are in the same container. The current container is Corporate Office.
-2. Record the detector's starting `level` and `state` in Attributes, and its fields on Tablet PC0 at `http://192.168.25.1`. The last observed state was `level 0, state 0`, even while the car showed `state 1`.
-3. In the Environment dialog, use Advanced Settings → Manual Adjustment to raise **Smoke** in the detector's container above 40%. Record the environment value, detector `level/state`, and gateway display before and after. This isolates whether the detector and gateway respond to smoke; it does **not** establish that the car generated it.
-4. Restore the original environment value and confirm the detector returns to the inactive state. If it does not, record the actual state rather than treating the threshold test as passed.
+- **Manual threshold:** With the car off, the detector read `level 10.048500061035156, state 0`. Setting the closet Smoke Manual Adjustment to `100` and advancing the environment clock produced `level 69.21540069580078, state 1`. After the adjustment was removed and the clock advanced, the detector returned to `level 36.340999603271484, state 0`. This verifies the detector's local threshold response only.
+- **Car stimulus:** With both devices in the Main Wiring Closet and the car set to `state 1`, the detector read `level 34.29800033569336, state 0` and later `level 34.18050003051758, state 0` after the environment clock advanced beyond 1:47:30. No car-caused alarm was observed. The car was returned to `state 0` before saving.
+- **Routed HTTP:** PC0 loaded `http://10.10.30.10` after the physical move; the AURA campus page and address were visible.
+- **Gateway reachability:** Tablet PC0 loaded the Home Gateway login page at `http://192.168.25.1`. The current Devices page and smoke fields could not be read without a lab login. The older [Devices screenshot](../packet_tracer/documentation/media/gateway-devices.jpg) documents an earlier session, not this smoke test.
 
-## 2. Verify the Old Car stimulus separately
+## Still required for a new release
 
-1. In a disposable topology copy, place the car and detector in the same **small** physical room or closet. Confirm their location from Physical view, not only their Logical view positions.
-2. Start with smoke below the alarm threshold. Alt-click the car to turn it on, advance the **environment** clock, and observe whether the container's Smoke value rises. Packet Tracer's installed help states a 3% per simulated hour rise in a 100,000 cm³ container; the large Corporate Office may dilute the effect.
-3. Record the detector's transition to `state 1` and the gateway's changed device fields. Then turn the car off and check whether the smoke level and alarm recover as expected. If either transition cannot be observed, document that limitation and the measured values.
-4. Save the revised `.pkt` only when the behavior is reproducible. Capture full-resolution screenshots of Physical view (shared container), detector Attributes before/after, the gateway device page, and the environment setting. Do not upscale a small Packet Tracer capture for the README.
-
-## 3. Recheck connectivity after moving devices
-
-- On Tablet PC0, confirm association with HomeGateway0 and that both `TEMP-SENSOR` and `SMOKE-SENSOR` still appear at `http://192.168.25.1`.
-- On sensor-side PC0, reload `http://10.10.30.10` and show the address bar plus page title in one native-resolution capture. This is the routed HTTP path across Router0 and Router1.
-- If the physical move breaks wireless registration, restore association and static addresses as specified in the [build guide](../packet_tracer/documentation/BUILD_GUIDE.md), then repeat the observations.
-
-## 4. Update evidence and release only after the checks
-
-Record the Packet Tracer version, date, observed readings, and exact outcome in [VALIDATION.md](VALIDATION.md). Replace or supplement the small [routed HTTP screenshot](../packet_tracer/documentation/media/routed-http-pc0.jpg) with a native-resolution capture and update the README evidence captions. Commit the validated `.pkt` and captures, rerun the software test suite and CI, then publish a release if the smoke transition and connectivity gates pass. A failed or inconclusive alarm test should remain visible in the README and should not be presented as complete.
-
-The step 05 dashboard chart has now been exercised in Chrome at desktop and mobile widths across all 16 control combinations; the exact scope is recorded in [VALIDATION.md](VALIDATION.md). The remaining release gate in this file is the Packet Tracer smoke transition and connectivity evidence above.
+1. Establish an Old Car-caused Smoke rise and detector transition to `state 1` in the same physical container. Record the container Smoke value and detector readings before and after. The manual adjustment result does not satisfy this gate. Packet Tracer's installed Environment help says output is 3% per simulated hour in a 100,000 cm³ container; the Main Wiring Closet may still dilute the effect, but its volume was not measured.
+2. Sign in to the simulated Home Gateway from Tablet PC0 and capture its Devices page before and after a reproducible smoke alarm. Confirm both `TEMP-SENSOR` and `SMOKE-SENSOR` remain registered after the physical move.
+3. Recheck PC0's routed HTTP page after any further topology edits, rerun tests and CI, and publish a new release only after all smoke, connectivity, and CI gates pass. Until then, keep the failed or incomplete alarm observation visible in the README.
