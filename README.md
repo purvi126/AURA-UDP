@@ -85,7 +85,7 @@ To use the dashboard, start a local server **from the repository root in a separ
 python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-Then open [the local dashboard](http://localhost:8000/python/dashboard/). It guides you through six steps: choose a network condition, compare transports, test the deadline rule, inspect alert reservation, vary the alert arrival order and link rate, and follow one recorded message. If the browser says the page cannot be reached, check that the server terminal is still running and that you started it from the repository root. On Windows, use `python -m http.server 8000 --bind 127.0.0.1`. The server is for local review, not deployment.
+Then open [the local dashboard](http://localhost:8000/python/dashboard/). It guides you through six steps: choose a network condition, compare transports, test the deadline rule, inspect alert reservation, vary the alert arrival order and link rate, and follow one recorded message. The step 05 deadline-delivery chart was [checked in Chrome](docs/VALIDATION.md) at desktop and mobile widths against all 16 saved scenarios. If the browser says the page cannot be reached, check that the server terminal is still running and that you started it from the repository root. On Windows, use `python -m http.server 8000 --bind 127.0.0.1`. The server is for local review, not deployment.
 
 Run a single mode:
 
