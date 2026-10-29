@@ -14,6 +14,8 @@ The LMS PDF lists **possible** NS-2/NS-3 network simulation topics and shows Pac
 
 ## Five-minute demonstration order
 
+For the live review, open the code and the saved charts before opening Packet Tracer. Start with the question, "Did the critical alert arrive before its deadline?" Then show one code path and one measured result before the campus demonstration. Use the pointer-free [car OFF/ON gateway pair](../packet_tracer/documentation/EVIDENCE_GUIDE.md) if the live simulator needs time to settle.
+
 | Time | Show | Say |
 |---|---|---|
 | 0:00–0:45 | This page and the [README architecture](../README.md#architecture) | The alert must arrive before its deadline; NS2 measures this, Packet Tracer illustrates the campus. |
@@ -23,6 +25,25 @@ The LMS PDF lists **possible** NS-2/NS-3 network simulation topics and shows Pac
 | 3:30–4:30 | [Packet Tracer topology](../packet_tracer/topology/AURA-UDP-campus.pkt) | On PC0 load `http://10.10.30.10`; on Tablet PC0 show both registered devices at `http://192.168.25.1`. |
 | 4:30–5:00 | [Packet Tracer evidence guide](../packet_tracer/documentation/EVIDENCE_GUIDE.md) | Show the paired gateway screenshots: car OFF versus ON and manual smoke adjustment before versus after. Explain that the two triggers were tested separately. |
 If the reviewer asks for only one graph, use the [fixed-scale 120-message robustness chart](../experiments/plots/robustness.svg): it includes the conditions in which one-shot delivery beats original AURA. An honest failure case makes the conclusion defensible.
+
+## Code explanation path
+
+| Open | Explain in one sentence |
+|---|---|
+| [`ns2/run.tcl`](../ns2/run.tcl), setup and `Agent/AuraEndpoint recv` | NS2 builds the lossy bottleneck; the receiver records the first delivery per message ID and acknowledges duplicates. |
+| `generate`, `pump`, `transmit` | A message gets a class and deadline, enters the sender queue, and is admitted when a window slot is available. Critical alerts are ordered by earliest absolute deadline. |
+| `timeout`, `on_ack` | A timeout can retry a message and shrink the window; an unambiguous ACK updates the RTT estimate, RTO, and window credit. |
+| `expected_forward_time` and the retry branch in `transmit` | AURA skips a *retry* when its estimated forward time exceeds the remaining alert lifetime. Every alert still gets an initial attempt. |
+| [`python/analysis/metrics.py`](../python/analysis/metrics.py), `calculate` | The parser rejects incomplete logs, counts each ID once, and computes DDR from all generated critical alerts. |
+| [`scripts/experiments.py`](../scripts/experiments.py), `main` | The runner invokes baseline, Selective Repeat, and AURA with matched scenario settings and summarizes their recorded traces. |
+
+Point to `events.csv` for what happened to messages and `control.csv` for sender decisions. State that the Packet Tracer topology demonstrates routed HTTP and native IoT smoke behavior; the NS2 code is the transport experiment.
+
+## Remaining review limits
+
+- The native Packet Tracer detector has no verified editable 30% alarm threshold. Its Specifications text says 30%, but Alarm stayed off at a live Level near 34.18 in a previous closet test. Do not say the threshold was changed. The working chamber car test reached Level 100 and triggered the alarm with the car's physical **Interact** control.
+- The separate historical manual-smoke gateway pair still shows a cursor. For clear slides, use the pointer-free physical car pair and routed HTTP capture in the evidence guide. If discussing manual smoke, describe it as a separate test and use its documented readings.
+- The latest [GitHub Actions run](https://github.com/purvi126/AURA-UDP/actions/runs/40929678171) passed for the documentation commit `61bde27`. Confirm any later commit's CI before citing that commit as green.
 
 ## Commands to prepare before opening Packet Tracer
 

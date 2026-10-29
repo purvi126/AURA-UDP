@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 def calculate(path):
+    """Turn one complete NS2 event log into unique-message metrics."""
     with Path(path).open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     if not rows:
@@ -23,6 +24,7 @@ def calculate(path):
     times = []
     allowed = {"generate", "send", "receive", "deliver", "ack", "timeout",
                "duplicate", "expire", "abandon", "late", "fail", "finish"}
+    # Reject malformed or partial logs before computing delivery rates.
     for row in rows:
         event = row["event"]
         if event not in allowed:
@@ -58,6 +60,7 @@ def calculate(path):
             sends += 1
             sent_ids.add(mid)
         elif event == "deliver" and mid not in delivered:
+            # A retry can arrive later, but delivery counts once per ID.
             delivered[mid] = row
         elif event == "abandon":
             abandoned_ids.add(mid)
@@ -68,6 +71,8 @@ def calculate(path):
     n = len(generated)
     critical = [mid for mid, row in generated.items() if row["class"] == "critical"]
     routine = [mid for mid, row in generated.items() if row["class"] == "routine"]
+    # DDR includes every generated alert in its denominator, even if it
+    # expired in the sender queue before its first transmission.
     timely = sum(mid in delivered and float(delivered[mid]["time"]) <= float(generated[mid]["deadline"]) for mid in critical)
     delays = [float(row["time"]) - float(generated[mid]["time"]) for mid, row in delivered.items()]
     if any(delay < 0 for delay in delays):
@@ -112,6 +117,7 @@ def calculate(path):
                 "background_flow_fairness_jain": ((rate1 + rate2)**2 / denom
                                                   if denom else None),
             }
+    # PDR asks whether a message arrived; DDR asks whether it arrived on time.
     critical_pdr = sum(mid in delivered for mid in critical) / len(critical) if critical else 0
     routine_pdr = sum(mid in delivered for mid in routine) / len(routine) if routine else 0
     routine_delays = [float(delivered[mid]["time"]) - float(generated[mid]["time"])

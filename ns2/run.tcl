@@ -40,6 +40,8 @@ for {set replication 0} {$replication < $seed} {incr replication} {
     $ack_rng next-substream
 }
 set ns [new Simulator]
+# Keep packet traces alongside event and control logs. The analysis reads
+# events.csv; control.csv explains sender-window and timeout decisions.
 set trace [open "$outdir/ns2.tr" w]
 set nam [open "$outdir/ns2.nam" w]
 set events [open "$outdir/events.csv" w]
@@ -82,6 +84,7 @@ Agent/AuraEndpoint instproc recv {payload} {
     set dl [lindex $f 4]
     set now [$ns now]
     puts $events "$now,receive,$id,$cls,$attempt,$dl"
+    # Only the first copy counts as delivery; duplicates still receive ACKs.
     if {![info exists received($id)]} {
         set received($id) 1
         set delivered($id) 1
@@ -156,6 +159,7 @@ proc transmit {id} {
     if {$mode eq "aura" && $class($id) eq "critical" && [$ns now] >= $deadline($id)} {
         set state($id) expired; log_event expire $id; return 0
     }
+    # Deadline feasibility applies to retries, never the first alert send.
     if {$mode eq "aura" && $class($id) eq "critical" && $attempts($id) > 0
         && $policy ni {no_feasibility legacy}
         && [$ns now] + [expected_forward_time] > $deadline($id)} {
@@ -177,6 +181,7 @@ proc expire_alert {id} {
 }
 proc timeout {id attempt} {
     global state attempts mode policy deadline ns rto window window_credit
+    # An ACK or a newer attempt makes this scheduled timer stale.
     if {$state($id) ne "pending" || $attempts($id) != $attempt} { return }
     if {$mode eq "aura" && [$ns now] >= $deadline($id)} {
         set state($id) expired; log_event expire $id; pump; return
@@ -207,6 +212,7 @@ proc on_ack {id} {
         }
         set rto [expr {max(0.08, min(1.0, $srtt + 4*$rttvar))}]
     }
+    # Increase the window after enough ACK progress; timeouts reduce it.
     if {$mode eq "aura" && $policy ni {fixed_window legacy} && $window < 6} {
         incr window_credit
         if {$window_credit >= $window} {
@@ -220,6 +226,8 @@ proc on_ack {id} {
 proc pump {} {
     global mode policy pending state class window critical_streak
     if {$mode eq "baseline"} { return }
+    # Fill available sender slots. The critical streak guard periodically
+    # admits the oldest routine message so alerts do not starve it forever.
     set active 0
     foreach id [array names state] { if {$state($id) eq "pending"} { incr active } }
     while {$active < $window && [llength $pending] > 0} {
@@ -258,6 +266,7 @@ proc generate {cls} {
     log_event generate $id
     if {$mode eq "aura" && $cls eq "critical"} { $ns at $deadline($id) "expire_alert $id" }
     if {$mode eq "baseline"} { set state($id) pending; transmit $id; return }
+    # Insert alerts by absolute deadline; routine messages keep arrival order.
     if {$mode eq "aura" && $cls eq "critical"} {
         if {$policy eq "legacy"} {
             set pending [linsert $pending 0 $id]
@@ -274,6 +283,7 @@ proc generate {cls} {
 }
 proc finish {} {
     global ns trace nam events control bgs bgs2 bg_sources outdir
+    # The finish marker lets metrics.py reject truncated simulations.
     puts $events "[$ns now],finish,0,,0,"
     set background [open "$outdir/background.csv" w]
     if {$bg_sources == 2} {

@@ -33,11 +33,14 @@ def main():
         p.error("NS2 executable 'ns' was not found on PATH")
     a.output.mkdir(parents=True, exist_ok=True)
     summary = []
+    # Match the scenario and seed across modes. Retries consume different
+    # RNG draws, so individual packets do not see identical loss outcomes.
     for mode in ("baseline", "sr", "aura"):
         dest = a.output / mode
         subprocess.run(["ns", str(ROOT / "ns2" / "run.tcl"), mode, str(a.loss),
                         str(a.delay_ms), str(a.background_kbps), str(a.deadline_ms),
                         str(a.seed), str(dest), str(a.interval_ms)], check=True)
+        # Each summary row comes from that mode's recorded event log.
         summary.append({"mode": mode, **calculate(dest / "events.csv")})
     with (a.output / "summary.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=summary[0].keys(), lineterminator="\n")
