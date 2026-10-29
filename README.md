@@ -1,5 +1,14 @@
 # AURA-UDP
 
+## Team Members
+
+| Name | Registration Number | GitHub |
+|---|---|---|
+| Purvi Valmeti | 24BCE2191 | [@purvi126](https://github.com/purvi126) |
+| M Harshita Sri | 24BCE2471 | [@harshii07](https://github.com/harshii07) |
+
+**Project:** AURA-UDP — Deadline-Aware Adaptive Reliable Transport for Critical IoT Communication Using NS2 and Cisco Packet Tracer.
+
 [![Python and NS2 checks](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml/badge.svg)](https://github.com/purvi126/AURA-UDP/actions/workflows/python.yml)
 
 [Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [1,440-run arrival and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
