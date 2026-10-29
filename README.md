@@ -13,7 +13,7 @@
 
 [Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [1,440-run arrival and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
-**Release status:** The latest AURA admission policy and research evaluations are committed on `main`. On 2026-10-29, the Packet Tracer smoke-response tests were completed successfully. Physical activation of the Old Car increased the gateway Smoke Level from approximately `0.000073422` (Alarm red) to `100` (Alarm green). In a separate manual smoke adjustment test, the gateway Smoke Level increased from approximately `3.08169` (Alarm red) to `66.8725` (Alarm green). Before-and-after screenshots are saved in `packet_tracer/documentation/media/`, and a validated topology copy is available at [`AURA-UDP-campus-validated.pkt`](packet_tracer/topology/AURA-UDP-campus-validated.pkt). The saved topology's final physical device placement still requires confirmation. No newer release has been published; see the [validation record](docs/VALIDATION.md) and [desktop checklist](docs/PENDING_DESKTOP_CHECKS.md).
+**Release status:** The latest AURA admission policy and research evaluations are committed on `main`. On 2026-10-29, the Packet Tracer smoke-response tests were completed successfully. Physical activation of the Old Car increased the gateway Smoke Level from approximately `0.000073422` (Alarm red) to `100` (Alarm green). In a separate manual smoke adjustment test, the gateway Smoke Level increased from approximately `3.08169` (Alarm red) to `66.8725` (Alarm green). Before-and-after screenshots are saved in `packet_tracer/documentation/media/`, and a validated topology copy is available at [`AURA-UDP-campus-validated.pkt`](packet_tracer/topology/AURA-UDP-campus-validated.pkt). The validated topology was reopened and inspected on 2026-10-29. Both SMOKE-TRIGGER-CAR and SMOKE-SENSOR are located in the Main Wiring Closet, with the car switched off and the smoke detector returned to its inactive state. Version v1.2.0 remains the latest published release. Additional experiments and Packet Tracer validation updates are available on the main branch. See the validation record and desktop checklist for the current development status.
 
 **Preparing for the final review?** Start with the [five-minute demonstration and evidence guide](docs/FINAL_REVIEW_GUIDE.md). The earlier [seven-page Review 2 PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) and [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx) are a **15 October progress snapshot**, not the current project status. The approximately 70–75% figure in that report was a planning estimate, not a measured completion metric.
 
@@ -68,6 +68,27 @@ For the academic scope and likely reviewer questions, see [academic review notes
 
 Numbered datagrams and ACKs are carried by NS2 `Agent/Message` instances. The sender retries individually; the receiver suppresses duplicate delivery. AURA adds deadline-ordered alert admission, a routine-traffic guard, an explicit estimate of whether a retry can arrive in time, RTT-based timing, and a bounded 4–6-message congestion window. An **experimental alert-reservation policy** keeps one sender slot free when only routine messages are waiting. See the [policy specification](docs/PROTOCOL.md). The [evaluation](docs/RESEARCH_EVALUATION.md) reports where that change helps and where the one-shot baseline still wins.
 
+## Repository Structure
+
+```text
+AURA-UDP/
+├── ns2/                 # NS2 transport simulation and protocol implementation
+├── python/
+│   ├── analysis/        # Metrics calculation and experimental analysis
+│   └── dashboard/       # Interactive results visualization
+├── scripts/             # Experiment automation and plotting utilities
+├── experiments/
+│   ├── results/         # Recorded simulation results and configuration files
+│   └── plots/           # Generated performance graphs
+├── packet_tracer/
+│   ├── topology/        # Editable Cisco Packet Tracer campus topology
+│   └── documentation/   # Network setup instructions and validation evidence
+├── tests/               # Automated tests
+└── docs/                # Protocol specifications, research evaluation, and guides
+```
+
+The repository separates protocol implementation, experiment automation, quantitative analysis, and network visualization. NS2 provides transport performance measurements, while Cisco Packet Tracer independently demonstrates campus connectivity and IoT device behavior.
+
 ## Requirements and quick start
 
 - Ubuntu WSL with NS2 2.35 (`ns` on `PATH`)
@@ -106,6 +127,48 @@ python3 python/analysis/metrics.py /tmp/aura-demo/events.csv
 ```
 
 The NS2 command arguments are `mode loss_probability delay_ms background_kbps deadline_ms seed output_directory [interval_ms] [policy] [message_count] [background_sources] [queue_limit] [schedule] [bottleneck_kbps]`. The defaults are 30 messages, one background source, a 12-packet queue, a regular schedule, and a 128 Kb/s bottleneck. The schedule can be `regular`, `regular_late_alert`, `burst_first_alert`, or `burst_late_alert`; burst schedules require a message count divisible by four. Background sources can be one or two and split the configured total CBR rate. Policy variants apply only to AURA; `full` is the default and `reserved_alert_slot` is the experimental candidate. The output contains `events.csv`, `control.csv`, `background.csv`, `ns2.tr`, and `ns2.nam`. NAM is optional for analysis. Each mode uses the same configured topology and generation schedule, with paired seed indices for the loss streams; transport choices can consume different draws, so individual packet losses are not identical.
+
+## Testing and Verification
+
+AURA-UDP includes automated software checks, reproducible NS2 experiments, and independent Cisco Packet Tracer validation.
+
+### Automated Tests
+
+Run the project's test suite from the repository root:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+The test suite checks the project's supported software components and helps detect regressions before running the experimental evaluations.
+
+For recorded validation outcomes and known limitations, see [Validation](docs/VALIDATION.md).
+
+### NS2 Experiment Verification
+
+The transport implementation is evaluated through reproducible NS2 simulations comparing three modes:
+
+1. **One-shot baseline:** Each application message is transmitted once.
+2. **Fixed Selective Repeat:** Individual messages can be retransmitted using acknowledgement-based recovery.
+3. **AURA-UDP:** Deadline-aware admission, adaptive retransmission decisions, and bounded sender-window control.
+
+Experiments produce event logs, control logs, and summary statistics. The primary metrics include deadline delivery ratio (DDR), packet delivery ratio (PDR), delay, retransmission overhead, and goodput.
+
+See [Research Evaluation](docs/RESEARCH_EVALUATION.md) for the experimental configurations, recorded results, and interpretation.
+
+### Cisco Packet Tracer Verification
+
+The separate Packet Tracer demonstration validates:
+
+- Routed HTTP connectivity between the campus client and server.
+- Home Gateway access and registered IoT devices.
+- Smoke Detector response to a physical smoke stimulus.
+- Smoke Detector response to a separate manual smoke adjustment.
+- Recovery to the inactive state after the smoke stimulus is removed.
+
+The validated topology is available in [`packet_tracer/topology/AURA-UDP-campus-validated.pkt`](packet_tracer/topology/AURA-UDP-campus-validated.pkt).
+
+**Scope clarification:** Packet Tracer validates campus networking and IoT behavior; it does not execute the AURA-UDP transport protocol. Transport performance is measured independently in NS2.
 
 ## Measured sample
 
@@ -204,6 +267,22 @@ The chart is generated directly from the saved CSV by [plot_sensitivity.py](scri
 At 128 Kb/s in crowded traffic, moving an alert from first to last **within the same burst timing** lowers one-shot DDR by 43.6 percentage points (paired 95% interval −46.7 to −40.3) and reserved AURA DDR by 15.2 points (−19.7 to −10.7). Burst spacing with the alert **first** changes one-shot DDR by only −0.9 points (−3.2 to +1.4); the sharp penalty appears with the alert last. Reservation helps in that tested combination, but it lowers routine delivery from 77.6% under original AURA to 59.3%. Original AURA remains weak in tight-deadline cases even at 256 Kb/s. The [full methods](docs/RESEARCH_EVALUATION.md), [run data](experiments/results/sensitivity/runs.csv), [transport comparisons](experiments/results/sensitivity/paired.csv), and [schedule contrasts](experiments/results/sensitivity/schedule_pairs.csv) show the exact conditions and uncertainty. These are descriptive synthetic results, not a claim of general or Internet-safe performance.
 
 The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monitor, Smoke Detector, and an Old Car smoke stimulus. After reconnecting `SMOKE-SENSOR`, both sensors appeared on the gateway Devices page. PC1 and PC2 each received four of four replies from Server0; PC3 received four of four replies from PC2. On 2026-10-29, PC0 again loaded the custom HTTP page from Server0 across both routers after the chamber change. The validated topology was reopened and inspected on 2026-10-29. Both `SMOKE-TRIGGER-CAR` and `SMOKE-SENSOR` are located in Main Wiring Closet. The car is OFF (`state = 0`), and the detector has recovered (`level = 0`, `state = 0`). The separate `SMOKE-TEST-CHAMBER` is empty in this saved version; earlier chamber-based test observations are retained in the validation history. A manual Smoke setting of `100` in Main Wiring Closet produced detector `level 69.21540069580078, state 1`. Later, physically activating the car in the chamber produced exhaust and detector `level 100, state 1`; the gateway showed Level `100` with a green Alarm indicator. Paired gateway before-and-after captures have now been completed for both physical car activation and manual smoke adjustment, with screenshots linked in the Packet Tracer evidence section above. See the [validation record](docs/VALIDATION.md) and [build guide](packet_tracer/documentation/BUILD_GUIDE.md). These are Packet Tracer connectivity and sensor observations, not transport performance measurements.
+
+## Documentation Map
+
+| Document | Description |
+|---|---|
+| [Getting Started](docs/START_HERE.md) | Environment setup, installation, and initial execution instructions. |
+| [Project Explained](docs/PROJECT_EXPLAINED.md) | Beginner-friendly explanation of the project, architecture, and terminology. |
+| [Protocol Specification](docs/PROTOCOL.md) | Detailed description of AURA's transport mechanisms, acknowledgements, retransmissions, deadlines, and adaptive window. |
+| [Research Evaluation](docs/RESEARCH_EVALUATION.md) | Experimental methodology, transport comparisons, ablation studies, robustness tests, and sensitivity analysis. |
+| [Validation Record](docs/VALIDATION.md) | Software validation, Packet Tracer evidence, and documented verification outcomes. |
+| [Final Review Guide](docs/FINAL_REVIEW_GUIDE.md) | Demonstration procedure and evidence checklist for academic review. |
+| [Academic Review](docs/ACADEMIC_REVIEW.md) | Project scope, academic justification, and likely reviewer questions. |
+| [Engineering Review](docs/ENGINEERING_REVIEW.md) | Implementation limitations, corrected issues, and engineering considerations. |
+| [Packet Tracer Build Guide](packet_tracer/documentation/BUILD_GUIDE.md) | Campus topology configuration, addressing, device setup, and connectivity verification. |
+
+For a quick introduction, begin with **Getting Started** and **Project Explained**. For technical evaluation, consult the **Protocol Specification**, **Research Evaluation**, and **Validation Record**.
 
 ## Limits
 
