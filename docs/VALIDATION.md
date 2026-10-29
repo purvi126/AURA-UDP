@@ -64,3 +64,51 @@ cmp experiments/results/sensitivity/schedule_pairs.csv /tmp/aura-sensitivity-che
 ```
 
 The 30-seed sweeps are descriptive for three short, four longer, and 16 arrival/link-rate synthetic scenarios. The feasibility rule saved retry traffic under high message rate and two-flow congestion but did not demonstrate a DDR gain. In both original two-flow conditions, one-shot delivery exceeded original AURA's deadline delivery. Alert-slot reservation improved crowded results at the cost of routine delivery; it still fell below one-shot in the original tight case. In the four-schedule study, moving the alert from first to last within a 128 Kb/s crowded burst reduced one-shot DDR by 43.6 points and reserved AURA DDR by 15.2 points. Reservation beat one-shot under the tested 128 Kb/s late-alert bursts, but several other tight-case paired differences from one-shot spanned zero. The results do not establish broad performance superiority or Internet-safe congestion fairness. Packet Tracer confirms the routed HTTP page and registered sensor telemetry, but it does not run the custom transport. The gateway WAN address did not serve its device page from PC3. DHCP failed for the IoT clients in this lab, so the saved topology uses static internal addresses. The detector responded both to manual Smoke adjustment in Main Wiring Closet and to the physically activated Old Car in the small chamber. The gateway displayed Level 100 during the car alarm, but a paired same-chamber gateway before/after capture remains pending after the login expired. Packet Tracer's Environment menu did not expose the new chamber, so its independent Smoke value was not recorded. The [remaining desktop checks](PENDING_DESKTOP_CHECKS.md) state the release gates. The gateway's lab HTTP interface and wireless settings are demonstration configuration, not a production security design.
+
+## Final paired gateway validation — 2026-10-29
+
+Two paired smoke-response tests were completed using Cisco Packet Tracer 9.0.
+
+### Test 1: Physical car smoke stimulus
+
+- Baseline: Car OFF; gateway Smoke Level approximately 0.000073422; Alarm indicator red.
+- Trigger: The Old Car was physically activated using Packet Tracer's Interact control.
+- Result: Gateway Smoke Level increased to 100; Alarm indicator changed to green.
+- Detector response: Smoke Detector reached level 100, state 1.
+- Outcome: PASSED.
+
+Evidence:
+- packet_tracer/documentation/media/smoke-chamber-gateway-before-car-2026-10-29.jpg
+- packet_tracer/documentation/media/smoke-chamber-gateway-after-car-2026-10-29.jpg
+
+### Test 2: Manual Smoke adjustment
+
+- Baseline: Gateway Smoke Level approximately 3.08169; Alarm indicator red.
+- Trigger: Main Wiring Closet Smoke Manual Adjustment was set to 100.
+- Result: Gateway Smoke Level increased to approximately 66.8725 during the test; the Alarm indicator changed to green.
+- The level subsequently decreased after the adjustment was removed.
+- Outcome: PASSED.
+
+Evidence:
+- packet_tracer/documentation/media/smoke-manual-gateway-before-2026-10-29.jpg
+- packet_tracer/documentation/media/smoke-manual-gateway-after-2026-10-29.jpg
+
+### Final topology
+
+- The car was switched OFF.
+- The detector recovered to a near-zero smoke reading.
+- A validated topology copy was saved as:
+  packet_tracer/topology/AURA-UDP-campus-validated.pkt
+
+Both paired gateway tests passed. These Packet Tracer observations validate simulated IoT smoke detection and gateway response, not execution of the AURA transport protocol. Transport performance is evaluated separately in NS2.
+
+### Final saved topology verification — 2026-10-29
+
+The saved `AURA-UDP-campus-validated.pkt` topology was reopened in Cisco Packet Tracer 9.0 and inspected.
+
+- `SMOKE-TRIGGER-CAR` (Old Car) is located in Main Wiring Closet with `state = 0` (OFF).
+- `SMOKE-SENSOR` (Smoke Detector) is located in Main Wiring Closet with `level = 0` and `state = 0`.
+- The separate `SMOKE-TEST-CHAMBER` is present but empty in this saved version.
+- Both devices are in their recovered, inactive states.
+
+The paired gateway screenshots document the successful smoke-response tests performed earlier. The saved topology represents the recovered state after testing.

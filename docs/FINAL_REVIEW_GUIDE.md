@@ -21,8 +21,7 @@ The LMS PDF lists **possible** NS-2/NS-3 network simulation topics and shows Pac
 | 1:45–2:45 | [Multi-seed chart](../experiments/plots/multiseed.svg) and [evaluation table](RESEARCH_EVALUATION.md#three-mode-results) | Explain DDR denominator, baseline/SR/AURA, and the tight-deadline failure. |
 | 2:45–3:30 | [Four-schedule chart](../experiments/plots/sensitivity.svg) or dashboard step 05 | Show how burst timing and alert position are varied separately; discuss routine-delivery cost. |
 | 3:30–4:30 | [Packet Tracer topology](../packet_tracer/topology/AURA-UDP-campus.pkt) | On PC0 load `http://10.10.30.10`; on Tablet PC0 show both registered devices at `http://192.168.25.1`. |
-| 4:30–5:00 | [Validation record](VALIDATION.md) | State what passed and what remains: the smoke detector alarm transition has not yet been verified. |
-
+| 4:30–5:00 | [Validation record](VALIDATION.md) | Show the paired gateway screenshots: car OFF versus ON and manual smoke adjustment before versus after. Both smoke-response tests passed. |
 If the reviewer asks for only one graph, use the [fixed-scale 120-message robustness chart](../experiments/plots/robustness.svg): it includes the conditions in which one-shot delivery beats original AURA. An honest failure case makes the conclusion defensible.
 
 ## Commands to prepare before opening Packet Tracer
@@ -49,14 +48,13 @@ The single run is **illustration**, not proof of an average advantage. For aggre
 | AURA reached 93.3% mean DDR in the original moderate-loss scenario versus 81.7% for one-shot. | In the original tight-deadline scenario it reached only 10.4% versus 12.9% for one-shot. |
 | The retry-feasibility decision can reduce extra sends. | Its ablation has not established an improvement in DDR. |
 | The reserved-alert candidate reduces alert starvation under some crowded loads. | It can lower routine PDR and does not consistently beat one-shot. |
-| Packet Tracer routed HTTP and native IoT registration were observed. | It does not run AURA, and the smoke alarm transition remains unverified. |
-
+| Packet Tracer routed HTTP, native IoT registration, and paired smoke-response gateway tests were observed. | Both physical car activation and manual smoke adjustment produced gateway alarm transitions. Packet Tracer does not execute the AURA transport protocol. |
 See [academic review notes](ACADEMIC_REVIEW.md) for likely questions and [protocol details](PROTOCOL.md) for the exact sender rules. Avoid calling the NS2 `Agent/Message` implementation a deployed UDP stack or a new UDP packet header.
 
 ## Before the review
 
 1. Confirm the live LMS has a **submitted** file and the correct assignment status. A PDF capture dated 26 October showed no submission at that moment; it cannot establish the current state. If submission is blocked, contact the course instructor promptly with the repository and report link.
-2. Keep a local copy of the [editable Packet Tracer topology](../packet_tracer/topology/AURA-UDP-campus.pkt), the [historical Review 2 PDF and DOCX](reviews/README.md), and this guide. The Review 2 report is dated 15 October and should be labeled as a **past progress snapshot**, not the final measured state.
-3. Check the [Packet Tracer desktop checklist](PENDING_DESKTOP_CHECKS.md): detector threshold, car stimulus, gateway after any physical move, and a clearer routed HTTP capture. Update the validation record only after direct observation.
+2. Keep a local copy of the [validated Packet Tracer topology](../packet_tracer/topology/AURA-UDP-campus-validated.pkt), the [historical Review 2 PDF and DOCX](reviews/README.md), and this guide. The Review 2 report is dated 15 October and should be labeled as a **past progress snapshot**, not the final measured state. Confirm the saved topology's physical device placement before the review.
+3. Review the [Packet Tracer desktop checklist](PENDING_DESKTOP_CHECKS.md) and [validation record](VALIDATION.md). The paired gateway tests for physical car smoke and manual smoke adjustment are complete, with before-and-after screenshots saved. Confirm the final topology's physical device placement and verify that the final GitHub commit passes CI.
 4. Do a brief visual check of dashboard step 05 on desktop and a narrow window. The static data-path test passed, but the new panel has not had a browser visual pass.
 5. Open the key files and commands before the session. If Packet Tracer or the dashboard cannot launch during review, use the saved topology, native screenshots, run logs, and CSVs while clearly identifying which checks were previously observed.
