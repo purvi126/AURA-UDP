@@ -284,10 +284,14 @@ The Packet Tracer file includes a DLC100 Home Gateway, native Temperature Monito
 
 For a quick introduction, begin with **Getting Started** and **Project Explained**. For technical evaluation, consult the **Protocol Specification**, **Research Evaluation**, and **Validation Record**.
 
-## Limits
+## Limitations
 
-The sender has a small bounded adaptive window; router queue priority, a custom C++ UDP header, and an Internet-grade congestion controller are not implemented. The 30-seed bootstrap intervals describe these workloads and are not confirmatory significance tests. The two-flow Jain score compares the two CBR background flows, not AURA against a congestion-controlled peer. The logical 64-byte goodput assumption is documented. See the [engineering review](docs/ENGINEERING_REVIEW.md) for corrected issues, security scope, and remaining limits, and [progress](docs/AI_SETUP_PROGRESS.md) for the implementation record.
+AURA-UDP is an academic research prototype evaluated using NS2 simulations. Its performance depends on network conditions, traffic patterns, and message deadlines; improvements are not guaranteed across all scenarios. The implementation uses a bounded adaptive sender window and does not include router-level priority scheduling or a production-grade congestion controller.
 
-MIT licensed; see [LICENSE](LICENSE).
+The reported experimental results are specific to the simulated workloads and require further validation before real-world deployment. Cisco Packet Tracer independently demonstrates campus connectivity and IoT device behavior; it does not execute the AURA-UDP transport protocol.
 
-For a published checkpoint or safe recovery, see the [rollback guide](docs/ROLLBACK.md).
+For implementation details, assumptions, and additional limitations, see the [Engineering Review](docs/ENGINEERING_REVIEW.md).
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
