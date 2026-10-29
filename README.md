@@ -13,7 +13,7 @@
 
 [Download the v1.2.0 research evaluation release](https://github.com/purvi126/AURA-UDP/releases/tag/v1.2.0), a stable rollback checkpoint with the editable Packet Tracer topology and the first 1,260 NS2 runs. The current `main` branch adds [480 longer, crowded runs](experiments/results/robustness/summary.csv), a [360-run alert-reservation study](experiments/results/reservation/summary.csv), a [1,440-run arrival and link-rate study](experiments/results/sensitivity/summary.csv), and a Packet Tracer smoke stimulus device. The earlier [v1.1.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.1.0) and [v1.0.0](https://github.com/purvi126/AURA-UDP/releases/tag/v1.0.0) releases remain available.
 
-**Release status:** The latest AURA admission policy and research evaluations are committed on `main`. On 2026-10-29, physical activation of the Old Car in a 1 m³ chamber increased the gateway Smoke Level from approximately `0.000073422` (Alarm red) to `100` (Alarm green). A separate manual smoke adjustment changed the gateway from Level `3.08169` (Alarm red) to about `48.18` (Alarm green) in the saved after image. The [paired evidence guide](packet_tracer/documentation/EVIDENCE_GUIDE.md) links the native captures and their limits. A later manual GitHub commit changed the main topology, so inspect physical placement before demonstrating the car live. Version v1.2.0 remains the latest published release. See the [validation record](docs/VALIDATION.md) and [desktop status](docs/PENDING_DESKTOP_CHECKS.md) for current release gates.
+**Release status:** The latest AURA admission policy and research evaluations are committed on `main`. On 2026-10-29, physical activation of the Old Car beside the detector in a 1 m³ chamber increased the gateway Smoke Level from `0` (Alarm red) to `100` (Alarm green); switching the car OFF returned it to about `0.057` (Alarm red). The main `.pkt` was saved with both devices in the chamber and the car OFF. A separate earlier manual smoke adjustment changed the gateway from Level `3.08169` (Alarm red) to about `48.18` (Alarm green) in its saved after image. The [evidence guide](packet_tracer/documentation/EVIDENCE_GUIDE.md) links the new pointer-free car, recovery, and routed HTTP captures, plus the historical manual pair. Version v1.2.0 remains the latest published release pending final CI. See the [validation record](docs/VALIDATION.md) and [desktop status](docs/PENDING_DESKTOP_CHECKS.md) for current release gates.
 
 **Preparing for the final review?** Start with the [five-minute demonstration and evidence guide](docs/FINAL_REVIEW_GUIDE.md). The earlier [seven-page Review 2 PDF](docs/reviews/AURA-UDP-Review-2-70-percent-progress.pdf) and [editable Word document](docs/reviews/AURA-UDP-Review-2-70-percent-progress.docx) are a **15 October progress snapshot**, not the current project status. The approximately 70–75% figure in that report was a planning estimate, not a measured completion metric.
 
@@ -166,7 +166,7 @@ The separate Packet Tracer demonstration validates:
 - Smoke Detector response to a separate manual smoke adjustment.
 - Recovery to the inactive state after the smoke stimulus is removed.
 
-The validated topology is available in [`packet_tracer/topology/AURA-UDP-campus-validated.pkt`](packet_tracer/topology/AURA-UDP-campus-validated.pkt).
+Use the [main campus topology](packet_tracer/topology/AURA-UDP-campus.pkt) for the current chamber demonstration. The [validated snapshot](packet_tracer/topology/AURA-UDP-campus-validated.pkt) records an earlier recovered closet state.
 
 **Scope clarification:** Packet Tracer validates campus networking and IoT behavior; it does not execute the AURA-UDP transport protocol. Transport performance is measured independently in NS2.
 
@@ -185,13 +185,13 @@ The checked-in sample comes from `loss=0.15`, `delay=40 ms`, `background=80 Kb/s
 
 ![Readable diagram of the routed HTTP path and the two registered native IoT sensors](packet_tracer/documentation/media/evidence-overview.svg)
 
-This vector diagram explains the topology. The [native PC0 capture](packet_tracer/documentation/media/routed-http-after-chamber-2026-10-29.jpg) shows the routed page after the chamber change. The [manual smoke capture](packet_tracer/documentation/media/smoke-manual-threshold-passed-2026-10-29.jpg) and [car-caused detector capture](packet_tracer/documentation/media/smoke-chamber-car-triggered-alarm-2026-10-29.jpg) show two separate alarms. The [evidence guide](packet_tracer/documentation/EVIDENCE_GUIDE.md) supplies captions and limits for report use.
+This vector diagram explains the topology. The new [pointer-free PC0 capture](packet_tracer/documentation/media/routed-http-pc0-clean-2026-10-29.jpg) shows the routed page after restoring the chamber layout. The [manual smoke capture](packet_tracer/documentation/media/smoke-manual-threshold-passed-2026-10-29.jpg) and [car-caused detector capture](packet_tracer/documentation/media/smoke-chamber-car-triggered-alarm-2026-10-29.jpg) show two separate alarms. The [evidence guide](packet_tracer/documentation/EVIDENCE_GUIDE.md) supplies captions and limits for report use.
 
-**Paired gateway evidence (2026-10-29):** Both smoke-response tests passed in Cisco Packet Tracer 9.0. The physical car test recorded gateway Smoke Level increasing from approximately `0.000073422` (Alarm red) to `100` (Alarm green). The separate manual smoke adjustment test recorded `3.08169` (Alarm red) before and about `48.18` (Alarm green) in its saved after image. The screenshots still contain the simulator cursor; they have not been edited to remove it.
+**Paired gateway evidence (2026-10-29):** Both smoke-response tests passed in Cisco Packet Tracer 9.0. The new physical car test recorded gateway Smoke Level increasing from `0` (Alarm red) to `100` (Alarm green), then returning close to zero with the car OFF. These new images are pointer-free direct captures. The separate manual smoke adjustment test recorded `3.08169` (Alarm red) before and about `48.18` (Alarm green) in its saved after image; that older pair still shows the simulator cursor.
 
-- **Car test:** [Before](packet_tracer/documentation/media/smoke-chamber-gateway-before-car-2026-10-29.jpg) · [After](packet_tracer/documentation/media/smoke-chamber-gateway-after-car-2026-10-29.jpg)
+- **Car test:** [Before](packet_tracer/documentation/media/smoke-chamber-gateway-before-car-clean-2026-10-29.jpg) · [After](packet_tracer/documentation/media/smoke-chamber-gateway-after-car-clean-2026-10-29.jpg) · [Recovered](packet_tracer/documentation/media/smoke-chamber-gateway-recovered-clean-2026-10-29.jpg)
 - **Manual test:** [Before](packet_tracer/documentation/media/smoke-manual-gateway-before-2026-10-29.jpg) · [After](packet_tracer/documentation/media/smoke-manual-gateway-after-2026-10-29.jpg)
-- **Validated Packet Tracer file:** [AURA-UDP-campus-validated.pkt](packet_tracer/topology/AURA-UDP-campus-validated.pkt)
+- **Current Packet Tracer file:** [AURA-UDP-campus.pkt](packet_tracer/topology/AURA-UDP-campus.pkt)
 
 These results demonstrate native Packet Tracer IoT behavior; the AURA transport protocol is evaluated separately in NS2.
 
