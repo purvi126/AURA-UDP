@@ -377,7 +377,7 @@ proc generate {cls} {
 # Write finish marker, background reception totals, and close output files.
 # ====================================================================
 proc finish {} {
-    global ns trace nam events control bgs bgs2 bg_sources outdir
+    global ns trace nam events control bgs bgs2 bg_sources outdir mode nextid received
     # The finish marker lets metrics.py reject truncated simulations.
     puts $events "[$ns now],finish,0,,0,"
     set background [open "$outdir/background.csv" w]
@@ -394,6 +394,8 @@ proc finish {} {
     }
     close $background
     close $trace; close $nam; close $events; close $control
+    puts "NS2 complete: mode=$mode generated=$nextid unique_received=[array size received]"
+    puts "NS2 wrote: $outdir/events.csv, control.csv, background.csv, ns2.tr, ns2.nam"
     exit 0
 }
 

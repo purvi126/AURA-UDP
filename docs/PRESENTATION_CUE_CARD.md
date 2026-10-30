@@ -22,6 +22,7 @@ Open `ns2/run.tcl`, `python/analysis/metrics.py`, the [robustness chart](../expe
 
 ```bash
 cd /mnt/d/projects/AURA-UDP
+python3 scripts/demo_ns2_pipeline.py
 ns ns2/run.tcl aura 0.15 40 80 300 7 /tmp/aura-review
 python3 python/analysis/metrics.py /tmp/aura-review/events.csv
 head -n 12 /tmp/aura-review/events.csv
@@ -29,6 +30,8 @@ head -n 12 /tmp/aura-review/control.csv
 ```
 
 `events.csv` records what happened to each message; `control.csv` records sender decisions. If the live simulator or gateway is slow, show the saved [pointer-free car and HTTP captures](../packet_tracer/documentation/EVIDENCE_GUIDE.md) and identify them as recorded tests.
+
+The first command is the clearest proof of the runtime connection: it displays NS2's own completion output, the CSV it produced, and Python's result from that CSV in one terminal view. There is no separate NS2 client/server application window; `ns2.nam` is an optional graphical packet animation.
 
 ## Boundaries to state plainly
 

@@ -111,6 +111,8 @@ python3 scripts/plot_robustness.py
 python3 scripts/plot_sensitivity.py
 ```
 
+For a terminal demonstration that visibly connects the two runtimes, run `python3 scripts/demo_ns2_pipeline.py`. It prints the actual `ns ns2/run.tcl ...` command, NS2's completion message, a critical message's `events.csv` lifecycle, and the Python metrics calculated from that same file. NS2 also writes `ns2.tr` and `ns2.nam`; the latter can be opened with `nam` when a graphical Network Animator installation is available. The Python script orchestrates and analyzes the run; the sender, receiver, links, loss, and timing execute in NS2.
+
 To use the dashboard, start a local server **from the repository root in a separate terminal** and leave it running:
 
 ```bash
