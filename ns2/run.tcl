@@ -1,7 +1,17 @@
+# ====================================================================
+# AURA-UDP: ADAPTIVE UDP RELIABILITY FOR ALERTS
+# Main NS2 simulation: one-shot baseline, Selective Repeat, and AURA.
+# Comments explain the implementation; executable code is unchanged.
+# ====================================================================
 # AURA-UDP: OTcl transport running over real NS2 Message agents and links.
 # ns run.tcl MODE LOSS DELAY_MS BACKGROUND_KBPS DEADLINE_MS SEED OUTDIR
 #   ?INTERVAL_MS? ?POLICY? ?MESSAGE_COUNT? ?BACKGROUND_SOURCES? ?QUEUE_LIMIT?
 #   ?regular|regular_late_alert|burst_first_alert|burst_late_alert? ?BOTTLENECK_KBPS?
+
+# ====================================================================
+# 01 | INPUT PARAMETERS AND VALIDATION
+# Read arguments, apply defaults, and reject invalid configurations.
+# ====================================================================
 if {$argc < 7 || $argc > 14} { puts stderr "usage: ns run.tcl baseline|sr|aura loss delay_ms background_kbps deadline_ms seed outdir ?interval_ms? ?full|no_feasibility|fixed_window|legacy|reserved_alert_slot? ?message_count? ?background_sources? ?queue_limit? ?regular|regular_late_alert|burst_first_alert|burst_late_alert? ?bottleneck_kbps?"; exit 2 }
 lassign $argv mode loss delay_ms bg_kbps deadline_ms seed outdir interval_ms policy message_count bg_sources queue_limit schedule bottleneck_kbps
 if {$interval_ms eq ""} { set interval_ms 120 }
@@ -28,6 +38,11 @@ if {![string is integer -strict $bottleneck_kbps] || $bottleneck_kbps < 1} { err
 if {$schedule in {burst_first_alert burst_late_alert} && $message_count % 4 != 0} { error "burst schedules require message_count divisible by 4" }
 if {$outdir eq ""} { error "output directory must not be empty" }
 file mkdir $outdir
+
+# ====================================================================
+# 02 | REPRODUCIBLE RANDOM LOSS STREAMS
+# Use separate seeded streams for forward data and returning ACK loss.
+# ====================================================================
 # The seed is a replication/substream index. Keep data and ACK loss on
 # separate RNG streams so their draws do not consume each other's sequence.
 ns-random 1
@@ -39,6 +54,11 @@ for {set replication 0} {$replication < $seed} {incr replication} {
     $data_rng next-substream
     $ack_rng next-substream
 }
+
+# ====================================================================
+# 03 | SIMULATOR AND OUTPUT TRACES
+# Initialize NS2 and create CSV and packet-level trace outputs.
+# ====================================================================
 set ns [new Simulator]
 # Keep packet traces alongside event and control logs. The analysis reads
 # events.csv; control.csv explains sender-window and timeout decisions.
@@ -50,6 +70,11 @@ set control [open "$outdir/control.csv" w]
 puts $control "time,event,window,rto,id"
 $ns trace-all $trace
 $ns namtrace-all $nam
+
+# ====================================================================
+# 04 | NETWORK TOPOLOGY AND LOSS MODELS
+# Create source, router, destination, bottleneck, queue, and error models.
+# ====================================================================
 set src [$ns node]; set router [$ns node]; set dst [$ns node]; set bgsrc [$ns node]
 if {$bg_sources == 2} { set bgsrc2 [$ns node] }
 set delay "${delay_ms}ms"
@@ -72,6 +97,11 @@ set ack_uniform [new RandomVariable/Uniform]
 $ack_uniform use-rng $ack_rng
 $ack_loss ranvar $ack_uniform
 $ns lossmodel $ack_loss $dst $router
+
+# ====================================================================
+# 05 | RECEIVER AND ACKNOWLEDGEMENTS
+# Deduplicate message IDs, record first delivery, and return ACKs.
+# ====================================================================
 Class Agent/AuraEndpoint -superclass Agent/Message
 Agent/AuraEndpoint instproc recv {payload} {
     global ns events received delivered deadline sender mode
@@ -95,12 +125,22 @@ Agent/AuraEndpoint instproc recv {payload} {
     } else { puts $events "$now,duplicate,$id,$cls,$attempt,$dl" }
     if {$mode ne "baseline"} { $self send "ACK:$id" }
 }
+
+# ====================================================================
+# 06 | ENDPOINT CONNECTIONS
+# Attach sender and receiver agents to the NS2 topology.
+# ====================================================================
 set sender [new Agent/AuraEndpoint]
 set receiver [new Agent/AuraEndpoint]
 $ns attach-agent $src $sender
 $ns attach-agent $dst $receiver
 $ns connect $sender $receiver
 $ns connect $receiver $sender
+
+# ====================================================================
+# 07 | COMPETING BACKGROUND TRAFFIC
+# Configure one or two CBR UDP sources and receive-side monitoring.
+# ====================================================================
 set bga [new Agent/UDP]
 set bgs [new Agent/LossMonitor]
 $ns attach-agent $bgsrc $bga
@@ -121,6 +161,11 @@ if {$bg_sources == 2} {
     if {$bg_kbps > 0} { $cbr2 set rate_ "[expr {$bg_kbps/2.0}]Kb" } else { $cbr2 set rate_ "1Kb" }
     $cbr2 attach-agent $bga2
 }
+
+# ====================================================================
+# 08 | INITIAL SENDER STATE
+# Initialize window, RTO, RTT estimates, message arrays, and pending queue.
+# ====================================================================
 set window 4
 set window_credit 0
 set rto 0.3
@@ -138,10 +183,20 @@ array set delivered {}
 set pending {}
 set critical_streak 0
 puts $control "0,init,$window,$rto,0"
+
+# ====================================================================
+# 09 | CONTROL LOGGING
+# Write sender window and retransmission timeout changes to control.csv.
+# ====================================================================
 proc log_control {event id} {
     global ns control window rto
     puts $control "[$ns now],$event,$window,$rto,$id"
 }
+
+# ====================================================================
+# 10 | FORWARD DELAY ESTIMATION
+# Estimate forward time from propagation delay and half the smoothed RTT.
+# ====================================================================
 proc expected_forward_time {} {
     global delay_ms srtt
     # Symmetric lab links: half the sampled RTT estimates a forward trip.
@@ -149,10 +204,20 @@ proc expected_forward_time {} {
     if {$srtt == 0.0} { return [expr {$delay_ms/1000.0}] }
     return [expr {max($delay_ms/1000.0, $srtt/2.0)}]
 }
+
+# ====================================================================
+# 11 | MESSAGE EVENT LOGGING
+# Record message events for reproducible post-processing.
+# ====================================================================
 proc log_event {ev id} {
     global ns events class attempts deadline
     puts $events "[$ns now],$ev,$id,$class($id),$attempts($id),$deadline($id)"
 }
+
+# ====================================================================
+# 12 | TRANSMISSION AND RETRY FEASIBILITY
+# Check expiry, suppress infeasible retries, send data, and arm timers.
+# ====================================================================
 proc transmit {id} {
     global ns sender mode policy class deadline attempts senttime state rto
     if {$state($id) ne "pending"} { return 0 }
@@ -172,6 +237,11 @@ proc transmit {id} {
     if {$mode ne "baseline"} { $ns at [expr {[$ns now] + $rto}] "timeout $id $attempts($id)" }
     return 1
 }
+
+# ====================================================================
+# 13 | CRITICAL ALERT EXPIRATION
+# Expire queued or pending alerts at their absolute deadline.
+# ====================================================================
 proc expire_alert {id} {
     global state
     if {$state($id) ni {queued pending}} { return }
@@ -179,6 +249,11 @@ proc expire_alert {id} {
     log_event expire $id
     pump
 }
+
+# ====================================================================
+# 14 | TIMEOUT AND BACKOFF
+# Ignore stale timers, enforce retry cap, back off RTO, and shrink window.
+# ====================================================================
 proc timeout {id attempt} {
     global state attempts mode policy deadline ns rto window window_credit
     # An ACK or a newer attempt makes this scheduled timer stale.
@@ -198,6 +273,11 @@ proc timeout {id attempt} {
     }
     if {![transmit $id]} { pump }
 }
+
+# ====================================================================
+# 15 | ACK PROCESSING AND ADAPTATION
+# Update sender state, Karn-safe RTT samples, RTO, and window credit.
+# ====================================================================
 proc on_ack {id} {
     global ns state mode policy attempts senttime srtt rttvar rto window window_credit
     if {![info exists state($id)] || $state($id) ne "pending"} { return }
@@ -223,6 +303,11 @@ proc on_ack {id} {
     }
     pump
 }
+
+# ====================================================================
+# 16 | PRIORITY SCHEDULING AND WINDOW ADMISSION
+# Fill free slots, prioritize alerts, guard routine traffic, and reserve alert slot.
+# ====================================================================
 proc pump {} {
     global mode policy pending state class window critical_streak
     if {$mode eq "baseline"} { return }
@@ -256,6 +341,11 @@ proc pump {} {
         }
     }
 }
+
+# ====================================================================
+# 17 | MESSAGE GENERATION AND QUEUE ORDER
+# Assign IDs and deadlines; insert alerts by earliest absolute deadline.
+# ====================================================================
 proc generate {cls} {
     global ns nextid deadline_ms state attempts class deadline pending mode policy
     set id [incr nextid]
@@ -281,6 +371,11 @@ proc generate {cls} {
     } else { lappend pending $id }
     pump
 }
+
+# ====================================================================
+# 18 | SIMULATION FINISH AND RESULTS
+# Write finish marker, background reception totals, and close output files.
+# ====================================================================
 proc finish {} {
     global ns trace nam events control bgs bgs2 bg_sources outdir
     # The finish marker lets metrics.py reject truncated simulations.
@@ -301,6 +396,11 @@ proc finish {} {
     close $trace; close $nam; close $events; close $control
     exit 0
 }
+
+# ====================================================================
+# 19 | TRAFFIC SCHEDULE AND SIMULATION START
+# Schedule regular or burst traffic, stop background flows, and run NS2.
+# ====================================================================
 if {$bg_kbps > 0} { $ns at 0.05 "$cbr start" }
 if {$bg_kbps > 0 && $bg_sources == 2} { $ns at 0.05 "$cbr2 start" }
 for {set i 0} {$i < $message_count} {incr i} {
